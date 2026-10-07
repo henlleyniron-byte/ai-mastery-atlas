@@ -1267,7 +1267,7 @@ export default function Home() {
     <main id="main-content" className="atlas-shell min-h-screen">
       <a className="skip-link" href="#start">Skip to start</a>
       <header className="site-header">
-        <a href="#top" className="brand"><Orbit className="h-5 w-5" /><span>AI Mastery Atlas</span><Badge variant="outline">v5.0</Badge></a>
+        <a href="#top" className="brand"><Orbit className="h-5 w-5" /><span>AI Mastery Atlas</span><Badge variant="outline">v5.1</Badge></a>
         <nav aria-label="Primary navigation">
           <a href="#start">Start</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
         </nav>
@@ -1499,7 +1499,7 @@ export default function Home() {
       </section>
 
       <section className="page-section final-section">
-        <div><div className="section-kicker">Version 5.0 candidate · Universal AI Systems Mastery · 9 September 2026</div><h2>Understand systems. Test claims. Route from evidence.</h2><p>Curriculum: exactly {totalHours} structured hours across {tracks.length} tracks, {moduleCount} authored modules and {labCount} track assessments. Resource register: {resources.length} integrated entries. V5 strengthens the existing curriculum with benchmark science, model-role reasoning, failure recovery, cost-per-success analysis and one migration-safe evidence export—without padding hours or exposing private entitlements.</p></div>
+        <div><div className="section-kicker">Version 5.1 · Community Edition · October 2026</div><h2>Understand systems. Test claims. Route from evidence.</h2><p>Curriculum: exactly {totalHours} structured hours across {tracks.length} tracks, {moduleCount} authored modules and {labCount} track assessments. Resource register: {resources.length} integrated entries. The v5.1 interface adds guided next-step routing, Beginner Safe Mode, freshness-aware filtering and evidence-gated progression on top of the V5 curriculum—without padding hours or exposing private entitlements.</p></div>
         <div className="final-actions"><Button asChild size="lg"><a href="#start">Return to start</a></Button><Button variant="ghost" onClick={resetLocalState}><RotateCcw /> Reset browser progress</Button></div>
       </section>
 
