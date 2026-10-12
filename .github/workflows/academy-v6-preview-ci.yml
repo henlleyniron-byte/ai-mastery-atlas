@@ -18,3 +18,9 @@ jobs:
         run: node --version
       - name: Run bounded Node tests
         run: node --test tests/academy-v6-contract.test.mjs tests/model-desk-v6-contract.test.mjs
+      - name: Install dependencies with repository preflight
+        run: npm run install:ci
+      - name: Build Atlas using the existing verified build script
+        run: npm run build
+      - name: Lint source with existing repository config
+        run: npm run lint
