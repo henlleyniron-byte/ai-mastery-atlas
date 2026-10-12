@@ -31,8 +31,8 @@ test("existing Atlas desktop and mobile navigation offers the preview", () => {
 });
 
 test("remaining forty-five lessons have authored workshops with all five fields", () => {
-  const mainIds = Array.from(data.matchAll(/"id": "([NRC]\\d{2})"/g), x => x[1]);
-  const workshopIds = Array.from(workshops.matchAll(/"([NRC]\\d{2})": \\{/g), x => x[1]);
+  const mainIds = Array.from(data.matchAll(/"id": "([NRC]\d{2})"/g), x => x[1]);
+  const workshopIds = Array.from(workshops.matchAll(/"([NRC]\d{2})": \{/g), x => x[1]);
   assert.equal(workshopIds.length, 45);
   assert.equal(new Set(workshopIds).size, 45);
   for (const id of workshopIds) {
