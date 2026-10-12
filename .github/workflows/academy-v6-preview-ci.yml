@@ -18,9 +18,21 @@ jobs:
         run: node --version
       - name: Run bounded Node tests
         run: node --test tests/academy-v6-contract.test.mjs tests/model-desk-v6-contract.test.mjs
+      - name: Audit tracked lockfile prerequisite
+        id: lockfile
+        run: |
+          if test -f package-lock.json; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Full repository build/lint unavailable: GitHub source mirror has no package-lock.json. Recover and verify original Site build inputs before release."
+          fi
       - name: Install dependencies with repository preflight
+        if: steps.lockfile.outputs.present == 'true'
         run: npm run install:ci
       - name: Build Atlas using the existing verified build script
+        if: steps.lockfile.outputs.present == 'true'
         run: npm run build
       - name: Lint source with existing repository config
+        if: steps.lockfile.outputs.present == 'true'
         run: npm run lint
