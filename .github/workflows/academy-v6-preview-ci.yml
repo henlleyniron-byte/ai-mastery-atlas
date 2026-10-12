@@ -1,0 +1,20 @@
+name: Academy preview source checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - "feature/v6-beginner-academy-20261012"
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check Node runtime
+        run: node --version
+      - name: Run bounded Node tests
+        run: node --test tests/academy-v6-contract.test.mjs tests/model-desk-v6-contract.test.mjs
