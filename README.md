@@ -46,3 +46,7 @@ npm run lint
 This GitHub import preserves the source behind the public ChatGPT Site. Product availability, pricing, and model specifications change; volatile claims should always be checked against the linked first-party sources.
 
 No licence has been granted yet. The source is public for inspection; reuse rights remain reserved unless a licence is added.
+
+## V6 comparative evaluation lab (upgrade branch)
+
+The additive [`public/v6-evaluation-lab.html`](public/v6-evaluation-lab.html) is a local-first blind-comparison practice exercise: learners supply two candidate outputs, cite a trustworthy verification procedure, score both against five criteria, explain their judgment, and export the rubric as JSON. This is a prototype, **not** a claim that the complete Atlas has shipped as V6. It is not live until tested and deployed.
