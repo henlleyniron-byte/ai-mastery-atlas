@@ -1269,14 +1269,14 @@ export default function Home() {
       <header className="site-header">
         <a href="#top" className="brand"><Orbit className="h-5 w-5" /><span>AI Mastery Atlas</span><Badge variant="outline">v5.1</Badge></a>
         <nav aria-label="Primary navigation">
-          <a href="#start">Start</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
+          <a href="#start">Start</a><a href="/academy">V6 Academy preview</a><a href="/model-desk">Model desk</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
         </nav>
         <details className="mobile-nav" onClick={(event) => {
           if (event.target instanceof HTMLAnchorElement) event.currentTarget.removeAttribute("open");
         }}>
           <summary aria-label="Open section navigation">Explore</summary>
           <nav aria-label="Section navigation">
-            <a href="#start">Start</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
+            <a href="#start">Start</a><a href="/academy">V6 Academy preview</a><a href="/model-desk">Model desk</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
           </nav>
         </details>
         <div className="header-progress" aria-label={`${courseCompletion}% course progress; ${evidenceCompletion}% independently demonstrated`} title={`${demonstratedHours}h demonstrated · ${masteredHours}h mastered after retest`}><span>Course {courseHours}/{totalHours}h</span><Progress value={courseCompletion} /></div>
