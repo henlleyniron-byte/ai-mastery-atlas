@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { academyLessons, academyResources, type AcademyTrack } from "@/lib/v6-academy-lessons";
+import { guidedWorkshops } from "@/lib/v6-guided-workshops";
 
 type Stage = "Not started" | "Viewed" | "Practised" | "Independently demonstrated" | "Retained";
 type Evidence = { stage: Stage; independentNote: string; independentAt: string; delayedNote: string; delayedAt: string };
@@ -56,7 +57,7 @@ export default function AcademyPage() {
   const filtered = useMemo(() => academyLessons.filter(x => x.track === track), [track]);
   const selected = academyLessons.find(x => x.id === selectedId) ?? filtered[0];
   const active = records[selected.id] ?? empty;
-  const example = starterExamples[selected.id];
+  const example = starterExamples[selected.id] ?? guidedWorkshops[selected.id];
   const practised = filtered.filter(x => order.indexOf((records[x.id] ?? empty).stage) >= 2).length;
   const demonstrated = filtered.filter(x => order.indexOf((records[x.id] ?? empty).stage) >= 3).length;
   const retained = filtered.filter(x => (records[x.id] ?? empty).stage === "Retained").length;
@@ -118,7 +119,7 @@ export default function AcademyPage() {
       <header className="my-7 rounded-3xl border border-cyan-500/30 bg-slate-900 p-6 sm:p-9">
         <p className="text-sm font-bold uppercase tracking-widest text-cyan-300">V6 Academy preview · source branch</p>
         <h1 className="mt-2 text-3xl font-bold sm:text-5xl">From complete beginner to independent operator</h1>
-        <p className="mt-4 max-w-3xl text-slate-300">Choose Notion, RemNote or Claude Code. Each track has 16 owner-specified course briefs. Three starter lessons include a complete guided example. Remaining briefs are a transparent roadmap, <strong>not yet completed full lessons</strong>. A viewed page never counts as mastery.</p>
+        <p className="mt-4 max-w-3xl text-slate-300">Choose Notion, RemNote or Claude Code. Each track has 16 structured guided workshops with a mental model, worked steps, an independent task, an explicit rubric and a repair strategy. Three starter lessons offer expanded walkthroughs. Current official-documentation checks and in-browser assessment remain necessary; <strong>these workshops are not independently accredited or fully validated courses</strong>. A viewed page never counts as mastery.</p>
         <p className="mt-3 text-sm text-amber-200">This preview saves only to this browser; it does not sync to Notion, RemNote, Anki or the main Atlas progress system. Do not type passwords, private messages, grades or medical information into evidence notes.</p>
       </header>
       <div className="mb-6 flex flex-wrap gap-2" role="group" aria-label="Select learning track">
@@ -140,12 +141,12 @@ export default function AcademyPage() {
               onClick={() => setSelectedId(item.id)}
               className={"rounded-lg p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-200 " + (selected.id === item.id ? "bg-cyan-950 text-white" : "hover:bg-slate-800")}>
               <span className="mr-2 font-mono text-cyan-300">{item.id}</span>{item.title}
-              <span className="mt-1 block text-xs text-slate-400">{(records[item.id] ?? empty).stage}{starterExamples[item.id] ? " · guided starter lesson" : " · syllabus brief"}</span>
+              <span className="mt-1 block text-xs text-slate-400">{(records[item.id] ?? empty).stage}{starterExamples[item.id] ? " · expanded starter" : " · guided workshop"}</span>
             </button>)}
           </div>
         </nav>
         <article className="rounded-2xl border border-slate-700 bg-slate-900 p-5 sm:p-8">
-          <p className="text-sm uppercase tracking-widest text-cyan-300">{selected.id} · {example ? "Guided starter lesson" : "Course syllabus brief"}</p>
+          <p className="text-sm uppercase tracking-widest text-cyan-300">{selected.id} · {starterExamples[selected.id] ? "Expanded starter lesson" : "Guided workshop"}</p>
           <h2 className="my-3 text-2xl font-bold">{selected.title}</h2>
           <p className="leading-7 text-slate-200">{selected.brief}</p>
           {example ? <div className="mt-6 space-y-5">
@@ -175,7 +176,7 @@ export default function AcademyPage() {
         </article>
       </div>
       <footer className="mt-7 rounded-xl border border-slate-700 bg-slate-900 p-5 text-sm text-slate-300">
-        <p>Local-first preview: evidence notes are not synchronized, accredited or independently verified. The three developed starter lessons are N01, R01 and C01; 45 course briefs still need complete labs and assessment content.</p>
+        <p>Local-first preview: evidence notes are not synchronized, accredited or independently verified. All 48 entries now have guided workshop material; N01, R01 and C01 have expanded starter demonstrations. Provider software details, exact lesson-specific source citations and live interactive assessment have not been fully validated.</p>
         <button type="button" onClick={exportProgress} className="mt-3 rounded-lg border border-slate-500 px-4 py-2 text-white">Export local preview state (JSON)</button>
         {storageError && <p role="alert" className="mt-3 text-red-300">Browser storage is unavailable or blocked. Entries may not survive a reload; export what you can.</p>}
       </footer>
