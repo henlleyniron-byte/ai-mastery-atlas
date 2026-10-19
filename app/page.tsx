@@ -1302,7 +1302,7 @@ export default function Home() {
         </aside>
       </section>
 
-      <section id="start" className="page-section">
+      <section id="start" tabIndex={-1} className="page-section">
         <div className="section-kicker">Start here</div>
         <h2 className="section-title">Choose a route without locking yourself into a product.</h2>
         <p className="section-intro">Your selections and progress stay in this browser’s local storage. There is no account sync or analytics payload: clearing site data removes them, and anyone using this browser profile can see them.</p>
