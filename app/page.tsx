@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OperatorCore } from "@/components/operator-core";
 import { KnowledgeSystemsStudio } from "@/components/knowledge-systems-studio";
 import { SkillsPassport } from "@/components/skills-passport";
+import { ModelCurrencyPanel } from "@/components/model-currency-panel";
 import { V4CommandCentre, type UnitDetail } from "@/components/v4-command-centre";
 import { lessonData, type LessonContent } from "@/lib/lesson-data";
 import { expansionTracks } from "@/lib/expansion-track-data";
@@ -1327,6 +1328,7 @@ export default function Home() {
 
       <V4CommandCentre curriculum={runtimeCurriculum} details={runtimeUnitDetails} state={effectiveLearningState} onChange={setLearningState} />
       <SkillsPassport curriculum={runtimeCurriculum} state={effectiveLearningState} today={todayIso()} />
+      <ModelCurrencyPanel />
       <KnowledgeSystemsStudio />
 
       <section className="page-section proof-sprint" aria-labelledby="proof-sprint-title">
