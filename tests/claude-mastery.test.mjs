@@ -22,7 +22,7 @@ test("Sparring Arena holds task and rubric constant across all three systems", (
 });
 
 test("Claude sources are versioned and the unreviewed playlist cannot masquerade as canonical", () => {
-  assert.match(component, /verified 8 September 2026/);
+  assert.match(component, /checked 2 November 2026/);
   assert.match(page, /r129.*Claude models overview/);
   assert.match(page, /r138.*Review needed.*D · Discovery \/ unverified.*User-supplied.*Historical \/ version-specific/);
 });
@@ -31,4 +31,15 @@ test("Claude labs include configuration, repair, reusable expertise and a builde
   for (const lab of ["Project Architect Lab", "Autonomous Repair Lab", "Scientific Explanation Skill", "Builder Capstone"]) assert.match(component, new RegExp(lab));
   assert.match(component, /SKILL = HOW/);
   assert.match(component, /MCP \/ CONNECTOR = ACCESS/);
+});
+
+test("Claude model router uses current documented families without stale badges", () => {
+  for (const name of ["Fable 5.1", "Opus 5.5", "Sonnet 5.5", "Haiku 5.5"]) {
+    assert.ok(component.includes('["' + name + '",'), name + " must be listed");
+  }
+  for (const old of ["Opus 5", "Sonnet 5", "Haiku 4.5"]) {
+    assert.ok(!component.includes('["' + old + '",'), old + " is no longer current");
+  }
+  assert.match(component, /Current · verify access/);
+  assert.match(component, /https:\/\/platform\.claude\.com\/docs\/en\/models\/overview/);
 });

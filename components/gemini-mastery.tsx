@@ -45,6 +45,12 @@ const sources = [
   ["Gemini CLI", "https://geminicli.com/docs/"],
 ] as const;
 
+const modelRoutes = [
+  ["Gemini 4 Argon", "gemini-4-argon", "Flagship reasoning for demanding, verified work; test cost and access before adoption."],
+  ["Gemini 3.8 Flash", "gemini-3.8-flash", "Fast complex tasks and software engineering where latency also matters."],
+  ["Gemini 3.5 Flash-Lite", "gemini-3.5-flash-lite", "High-volume, cost-sensitive tasks with independent quality checks."],
+] as const;
+
 const derived = (e: StageEvidence | undefined) => {
   if (!e?.artifact?.trim()) return "Learning";
   if (!e.transfer?.trim()) return "Demonstrated";
@@ -72,6 +78,9 @@ export function GeminiMastery({ state, setState }: { state: GeminiLabState; setS
       <div className="benefit-grid">{benefits.map(([id, title, detail]) => <label key={id} className={state.planAudit[id] ? "benefit-card verified" : "benefit-card"}><input type="checkbox" checked={Boolean(state.planAudit[id])} onChange={() => toggleBenefit(id)} /><span><strong>{title}</strong><small>{detail}</small></span></label>)}</div>
       <p className="volatile-note"><ShieldCheck /> Benefits and limits were checked against Google’s official plan register on 8 September 2026. Recheck before committing money, quotas or a consequential workflow.</p>
     </div>
+
+    <div className="gemini-route-grid" aria-label="Current Gemini API model routing guide">{modelRoutes.map(([name, id, fit]) => <article key={id}><span>API model · verify access</span><h3>{name}</h3><p>{fit}</p><small><code>{id}</code></small></article>)}</div>
+    <p className="volatile-note"><ShieldCheck /> Official Gemini API model catalog checked 2 November 2026. A model listing is not proof of account access, subscription entitlements, pricing or a completed model run. <a href="https://ai.google.dev/gemini-api/docs/models" target="_blank" rel="noreferrer">Check the current model register</a>.</p>
 
     <div className="gemini-route-grid">
       <article><span>Study</span><h3>First attempt → Gemini repair</h3><p>Attempt independently, diagnose the exact error, request a targeted explanation, generate a transfer question and retest later.</p></article>
