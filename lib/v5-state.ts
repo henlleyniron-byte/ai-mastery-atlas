@@ -15,7 +15,11 @@ export const newPublicLabState = (): PublicLabState => ({
 
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === "object" && !Array.isArray(value);
 const text = (value: unknown, max = 4000) => typeof value === "string" ? value.trim().slice(0, max) : "";
-const validDate = (value: unknown) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T00:00:00Z`).getTime());
+const validDate = (value: unknown) => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
 
 const cleanStage = (value: unknown): StageEvidence | undefined => {
   if (!object(value)) return;
@@ -68,7 +72,9 @@ export function sanitizePublicLabState(value: unknown): PublicLabState {
     if (!object(raw) || !text(raw.id, 100) || !validDate(raw.date) || !text(raw.task) || !text(raw.model, 160)) return [];
     const run: BenchmarkRun = { id: text(raw.id, 100), date: String(raw.date), task: text(raw.task), model: text(raw.model, 160), version: text(raw.version, 160), tools: text(raw.tools, 500) };
     for (const key of ["latencySeconds", "estimatedCost", "score"] as const) {
-      const number = Number(raw[key]);
+      const input = raw[key];
+      if (typeof input !== "number" && !(typeof input === "string" && input.trim() !== "")) continue;
+      const number = Number(input);
       if (Number.isFinite(number) && number >= 0 && (key !== "score" || number <= 4)) run[key] = number;
     }
     if (text(raw.failure)) run.failure = text(raw.failure);
