@@ -13,7 +13,7 @@ permissions:
 jobs:
   public-lab-regressions:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -26,3 +26,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check Atlas public-lab state integrity
         run: node --test tests/public-lab-data-integrity.test.mjs
+      - name: Verify TypeScript types
+        run: npx tsc --noEmit
+      - name: Lint source
+        run: npm run lint
