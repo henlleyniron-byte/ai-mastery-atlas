@@ -9,7 +9,7 @@ const vite = await createServer({
   server: { middlewareMode: true, hmr: false, ws: false },
 });
 after(() => vite.close());
-const { sanitizePublicLabState, sanitizeClaudeLab, sanitizeGeminiLab } = await vite.ssrLoadModule("/lib/v5-state.ts");
+const { sanitizePublicLabState, sanitizeClaudeLab, sanitizeGeminiLab, parseOptionalBenchmarkMeasurement } = await vite.ssrLoadModule("/lib/v5-state.ts");
 
 test("public lab retest dates reject impossible calendar days without changing valid leap days", () => {
   const invalid = ["2026-02-29", "2026-02-30", "2026-04-31", "2026-13-01", "2026-1-01", "not-a-date"];
@@ -45,4 +45,21 @@ test("valid numeric benchmark measurements retain true zero, fractional costs an
   assert.equal(sanitizePublicLabState({ benchmarks: [{
     id: "bench-2", date: "2026-02-30", task: "Synthetic task", model: "Example",
   }] }).benchmarks.length, 0);
+});
+
+test("benchmark form rejects invalid values visibly rather than silently clamping", () => {
+  for (const input of ["Infinity", "NaN", "-1", "4.01", "1e309"]) assert.equal(parseOptionalBenchmarkMeasurement(input, 4), null, input);
+  assert.equal(parseOptionalBenchmarkMeasurement(""), undefined);
+  assert.equal(parseOptionalBenchmarkMeasurement("   "), undefined);
+  assert.equal(parseOptionalBenchmarkMeasurement("0"), 0);
+  assert.equal(parseOptionalBenchmarkMeasurement("2.5", 4), 2.5);
+  assert.equal(parseOptionalBenchmarkMeasurement("2.5", 2), null);
+});
+
+test("blank legacy arena scores cannot be converted into fictional zero", () => {
+  const clean = sanitizeClaudeLab({ arena: { g0: "", m0: "  ", c0: 0, g1: "3" } });
+  assert.equal(Object.hasOwn(clean.arena, "g0"), false);
+  assert.equal(Object.hasOwn(clean.arena, "m0"), false);
+  assert.equal(clean.arena.c0, 0);
+  assert.equal(clean.arena.g1, "3");
 });
