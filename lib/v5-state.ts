@@ -21,6 +21,15 @@ const validDate = (value: unknown) => {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 };
 
+/** Parse an optional, self-reported benchmark measurement; null denotes invalid input. */
+export function parseOptionalBenchmarkMeasurement(raw: string, max?: number): number | null | undefined {
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const value = Number(trimmed);
+  if (!Number.isFinite(value) || value < 0 || (max !== undefined && value > max)) return null;
+  return value;
+}
+
 const cleanStage = (value: unknown): StageEvidence | undefined => {
   if (!object(value)) return;
   const result: StageEvidence = {};
@@ -41,7 +50,7 @@ export function sanitizeClaudeLab(value: unknown): ClaudeLabState {
   }
   if (object(value.arena)) for (const [key, raw] of Object.entries(value.arena).slice(0, 40)) {
     if (["task", "criteria", "route"].includes(key) && text(raw)) result.arena[key] = text(raw);
-    if (/^[gcm][0-9]$/.test(key) && (typeof raw === "string" || typeof raw === "number")) {
+    if (/^[gcm][0-9]$/.test(key) && (typeof raw === "number" || (typeof raw === "string" && raw.trim() !== ""))) {
       const score = Number(raw);
       if (Number.isFinite(score) && score >= 0 && score <= 4) result.arena[key] = raw;
     }
