@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { Calculator, CircleAlert, ExternalLink, Gauge, LibraryBig, Plus, Trash2 } from "lucide-react";
-import type { BenchmarkRun } from "@/lib/v5-state";
+import { parseOptionalBenchmarkMeasurement, type BenchmarkRun } from "@/lib/v5-state";
 
 const modelRoles = [
   ["Frontier reasoner", "Hard, consequential synthesis and planning", "Use only when the task and verification justify added latency or cost."],
@@ -57,6 +57,7 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000
 export function V5SystemsLab({ runs, setRuns }: { runs: BenchmarkRun[]; setRuns: Dispatch<SetStateAction<BenchmarkRun[]>> }) {
   const [failureQuery, setFailureQuery] = useState("");
   const [draft, setDraft] = useState({ task: "", model: "", version: "", tools: "", latency: "", cost: "", score: "", failure: "", correction: "" });
+  const [benchmarkError, setBenchmarkError] = useState("");
   const [economics, setEconomics] = useState({ runs: 100, inputTokens: 2000, outputTokens: 600, inputRate: 1, outputRate: 4, successRate: 80 });
   const filteredFailures = useMemo(() => failureModes.filter(item => item.join(" ").toLowerCase().includes(failureQuery.toLowerCase())), [failureQuery]);
   const estimatedRunCost = (economics.inputTokens / 1_000_000 * economics.inputRate) + (economics.outputTokens / 1_000_000 * economics.outputRate);
@@ -65,12 +66,20 @@ export function V5SystemsLab({ runs, setRuns }: { runs: BenchmarkRun[]; setRuns:
   const costPerSuccess = successful ? totalCost / successful : null;
   const saveRun = () => {
     if (!draft.task.trim() || !draft.model.trim()) return;
+    const latencySeconds = parseOptionalBenchmarkMeasurement(draft.latency);
+    const estimatedCost = parseOptionalBenchmarkMeasurement(draft.cost);
+    const score = parseOptionalBenchmarkMeasurement(draft.score, 4);
+    if ([latencySeconds, estimatedCost, score].some(value => value === null)) {
+      setBenchmarkError("Check benchmark numbers: latency and cost must be non-negative; score must be between 0 and 4. Invalid entries were not saved.");
+      return;
+    }
+    setBenchmarkError("");
     setRuns(current => [...current, {
       id: globalThis.crypto?.randomUUID?.() || `${Date.now()}`,
       date: today(), task: draft.task.trim(), model: draft.model.trim(), version: draft.version.trim(), tools: draft.tools.trim(),
-      latencySeconds: draft.latency === "" ? undefined : Math.max(0, Number(draft.latency)),
-      estimatedCost: draft.cost === "" ? undefined : Math.max(0, Number(draft.cost)),
-      score: draft.score === "" ? undefined : Math.max(0, Math.min(4, Number(draft.score))),
+      latencySeconds: latencySeconds ?? undefined,
+      estimatedCost: estimatedCost ?? undefined,
+      score: score ?? undefined,
       failure: draft.failure.trim() || undefined, correction: draft.correction.trim() || undefined,
     }].slice(-100));
     setDraft({ task: "", model: "", version: "", tools: "", latency: "", cost: "", score: "", failure: "", correction: "" });
@@ -90,7 +99,7 @@ export function V5SystemsLab({ runs, setRuns }: { runs: BenchmarkRun[]; setRuns:
       <article className="v5-panel"><div className="panel-title"><Calculator /><div><span>AI economics</span><h3>Cost per successful task</h3></div></div><div className="economics-grid">{([["runs", "Runs"], ["inputTokens", "Input tokens/run"], ["outputTokens", "Output tokens/run"], ["inputRate", "Input $/1M"], ["outputRate", "Output $/1M"], ["successRate", "Success rate %"]] as const).map(([key, label]) => <label key={key}>{label}<input type="number" min="0" value={economics[key]} onChange={event => setEconomic(key, event.target.value)} /></label>)}</div><dl className="economics-result"><div><dt>Estimated run</dt><dd>${estimatedRunCost.toFixed(4)}</dd></div><div><dt>Batch total</dt><dd>${totalCost.toFixed(2)}</dd></div><div><dt>Cost/success</dt><dd>{costPerSuccess === null ? "No successes" : `$${costPerSuccess.toFixed(4)}`}</dd></div></dl><p className="panel-note">Enter current provider rates yourself. Subscription fees, cached tokens, tools, retries and human correction time are separate costs.</p></article>
     </div>
 
-    <article className="v5-panel personal-benchmark"><div className="panel-title"><Gauge /><div><span>Benchmark your own AI</span><h3>One task, one rubric, dated results.</h3></div></div><div className="benchmark-form"><label>Frozen task<input value={draft.task} onChange={event => setDraft({ ...draft, task: event.target.value })} /></label><label>Model/provider<input value={draft.model} onChange={event => setDraft({ ...draft, model: event.target.value })} /></label><label>Version/date label<input value={draft.version} onChange={event => setDraft({ ...draft, version: event.target.value })} /></label><label>Tools/environment<input value={draft.tools} onChange={event => setDraft({ ...draft, tools: event.target.value })} /></label><label>Latency seconds<input type="number" min="0" value={draft.latency} onChange={event => setDraft({ ...draft, latency: event.target.value })} /></label><label>Estimated cost<input type="number" min="0" step="0.0001" value={draft.cost} onChange={event => setDraft({ ...draft, cost: event.target.value })} /></label><label>Rubric score 0–4<input type="number" min="0" max="4" value={draft.score} onChange={event => setDraft({ ...draft, score: event.target.value })} /></label><label>Observed failure<input value={draft.failure} onChange={event => setDraft({ ...draft, failure: event.target.value })} /></label><label className="wide-field">Human correction required<input value={draft.correction} onChange={event => setDraft({ ...draft, correction: event.target.value })} /></label></div><button type="button" className="v5-action" onClick={saveRun} disabled={!draft.task.trim() || !draft.model.trim()}><Plus /> Save local run</button><div className="run-list" aria-live="polite">{runs.length === 0 ? <p>No runs recorded. Define success before opening a model.</p> : runs.slice().reverse().map(run => <div key={run.id}><span>{run.date}</span><strong>{run.model}</strong><span>{run.task}</span><b>{run.score === undefined ? "Unscored" : `${run.score}/4`}</b><button type="button" aria-label={`Delete ${run.model} benchmark run`} onClick={() => setRuns(current => current.filter(item => item.id !== run.id))}><Trash2 /></button></div>)}</div><p className="panel-note">Records stay in the unified browser-local V5 export. They are observations from your frozen task, not universal model rankings.</p></article>
+    <article className="v5-panel personal-benchmark"><div className="panel-title"><Gauge /><div><span>Benchmark your own AI</span><h3>One task, one rubric, dated results.</h3></div></div><div className="benchmark-form"><label>Frozen task<input value={draft.task} onChange={event => setDraft({ ...draft, task: event.target.value })} /></label><label>Model/provider<input value={draft.model} onChange={event => setDraft({ ...draft, model: event.target.value })} /></label><label>Version/date label<input value={draft.version} onChange={event => setDraft({ ...draft, version: event.target.value })} /></label><label>Tools/environment<input value={draft.tools} onChange={event => setDraft({ ...draft, tools: event.target.value })} /></label><label>Latency seconds<input type="number" min="0" value={draft.latency} onChange={event => setDraft({ ...draft, latency: event.target.value })} /></label><label>Estimated cost<input type="number" min="0" step="0.0001" value={draft.cost} onChange={event => setDraft({ ...draft, cost: event.target.value })} /></label><label>Rubric score 0–4<input type="number" min="0" max="4" value={draft.score} onChange={event => setDraft({ ...draft, score: event.target.value })} /></label><label>Observed failure<input value={draft.failure} onChange={event => setDraft({ ...draft, failure: event.target.value })} /></label><label className="wide-field">Human correction required<input value={draft.correction} onChange={event => setDraft({ ...draft, correction: event.target.value })} /></label></div><button type="button" className="v5-action" onClick={saveRun} disabled={!draft.task.trim() || !draft.model.trim()}><Plus /> Save local run</button>{benchmarkError && <p className="panel-note" role="alert">{benchmarkError}</p>}<div className="run-list" aria-live="polite">{runs.length === 0 ? <p>No runs recorded. Define success before opening a model.</p> : runs.slice().reverse().map(run => <div key={run.id}><span>{run.date}</span><strong>{run.model}</strong><span>{run.task}</span><b>{run.score === undefined ? "Unscored" : `${run.score}/4`}</b><button type="button" aria-label={`Delete ${run.model} benchmark run`} onClick={() => setRuns(current => current.filter(item => item.id !== run.id))}><Trash2 /></button></div>)}</div><p className="panel-note">Records stay in the unified browser-local V5 export. They are observations from your frozen task, not universal model rankings.</p></article>
 
     <article className="v5-panel failure-atlas"><div className="failure-atlas-heading"><div className="panel-title"><CircleAlert /><div><span>Failure Atlas</span><h3>Detect, prevent, recover.</h3></div></div><label>Search failure modes<input value={failureQuery} onChange={event => setFailureQuery(event.target.value)} placeholder="retrieval, state, injection…" /></label></div><div className="failure-grid">{filteredFailures.map(([name, symptom, cause, detection, prevention, recovery]) => <details key={name}><summary>{name}</summary><dl><div><dt>Symptom</dt><dd>{symptom}</dd></div><div><dt>Cause</dt><dd>{cause}</dd></div><div><dt>Detection</dt><dd>{detection}</dd></div><div><dt>Prevention</dt><dd>{prevention}</dd></div><div><dt>Recovery</dt><dd>{recovery}</dd></div></dl></details>)}</div>{filteredFailures.length === 0 && <p role="status">No failure mode matches that search.</p>}</article>
 
