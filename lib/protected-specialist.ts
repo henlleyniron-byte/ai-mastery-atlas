@@ -1,0 +1,22 @@
+import Trinity from './trinity-store.mjs';
+import {emptyProgress,importAcademy,type AcademyProgress} from './beginner-progress';
+import {EVALUATION_KEY,EVALUATION_SCHEMA,importEvaluations,mergeEvaluations,type Evaluation} from './evaluation-workbench';
+export type LocalStorage=Pick<Storage,'getItem'|'setItem'|'removeItem'> & {keys?:()=>string[]};
+const plain=(value:unknown):value is Record<string,unknown>=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
+export function assertRetainedFields(source:unknown,view:unknown,at='record'):void {
+ if(Array.isArray(source)){if(!Array.isArray(view)||source.length!==view.length)throw Error('Unrecognized '+at+' entries need review; original data is preserved.');source.forEach((v,i)=>assertRetainedFields(v,view[i],at+'['+i+']'));}
+ else if(plain(source)){if(!plain(view))throw Error('Unsupported '+at+' needs review.');for(const [key,value]of Object.entries(source)){if(!Object.hasOwn(view,key))throw Error('Unrecognized '+at+'.'+key+' needs review; original data is preserved.');assertRetainedFields(value,view[key],at+'.'+key);}}
+}
+export function openProtectedRecord<T extends object>(storage:LocalStorage,key:string,decode:(value:unknown)=>T){
+ const adapter={getItem:(k:string)=>storage.getItem(k),setItem:(k:string,v:string)=>storage.setItem(k,v),keys:()=>storage.keys?.()??Object.keys(storage),removeItem:(k:string)=>storage.removeItem(k)};
+ const validate=(value:unknown)=>{const clean=decode(value);assertRetainedFields(value,clean);};
+ const guard=Trinity.open(adapter,key,{isolated:true,validate});
+ return {get value():T|null{return guard.value===null?null:decode(guard.value);},get raw():string|null{return guard.raw;},get problem():string{return guard.problem;},get paused():boolean{return guard.readOnly;},checkpointKey:guard.checkpointKey,save(value:T){guard.save(value);return decode(value);},replace(value:T){guard.replace(value);return decode(value);},copies:()=>guard.copies()};
+}
+export function readAcademyBackup(value:unknown,ids:string[],today:string):AcademyProgress{const clean=importAcademy(value,ids,today);assertRetainedFields(value,clean);return clean;}
+export function openAcademyLedger(storage:LocalStorage,ids:string[],today:string){const record=openProtectedRecord(storage,'ai_mastery_atlas_v6_beginner_academy',value=>readAcademyBackup(value,ids,today));return {get value(){return record.value??emptyProgress();},get raw(){return record.raw;},get problem(){return record.problem;},checkpointKey:record.checkpointKey,save:(value:AcademyProgress,replacing=false)=>replacing?record.replace(value):record.save(value),copies:()=>record.copies()};}
+export function readEvaluationBackup(input:unknown,today:string){const value=typeof input==='string'?JSON.parse(input):input,runs=importEvaluations(value,today);const clean={schema:(value as {schema:string}).schema,runs};assertRetainedFields(value,clean);return clean;}
+export function openEvaluationLedger(storage:LocalStorage,today:string){const record=openProtectedRecord(storage,EVALUATION_KEY,value=>readEvaluationBackup(value,today));return {get value(){return record.value?.runs??[];},get problem(){return record.problem;},get raw(){return record.raw;},checkpointKey:record.checkpointKey,save(runs:Evaluation[],replacing=false){const current=replacing?runs:mergeEvaluations(record.value?.runs??[],runs),next=readEvaluationBackup({schema:EVALUATION_SCHEMA,runs:current},today);if(replacing)record.replace(next);else record.save(next);return JSON.stringify(next);},copies:()=>record.copies()};}
+export const FIELD_DRAFT_SCHEMA='atlas-evaluation-fields-v15';
+export type EvaluationFields={schema:typeof FIELD_DRAFT_SCHEMA;scope:string;fields:Record<string,string|boolean>};
+export function openEvaluationFields(storage:LocalStorage,scope:string){return openProtectedRecord<EvaluationFields>(storage,'atlas-evaluation-fields-v15:'+scope,value=>{if(!plain(value)||value.schema!==FIELD_DRAFT_SCHEMA||value.scope!==scope||!plain(value.fields)||Object.keys(value.fields).length>60)throw Error('Unsupported evaluation draft. Export original fields before replacing.');for(const [name,field]of Object.entries(value.fields))if(name.length>100||['__proto__','constructor','prototype'].includes(name)||typeof field!=='boolean'&&(typeof field!=='string'||field.length>10000))throw Error('Evaluation draft fields need review.');return {schema:FIELD_DRAFT_SCHEMA,scope,fields:value.fields as Record<string,string|boolean>};});}

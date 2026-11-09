@@ -1,5 +1,7 @@
 "use client";
 
+import { flagshipSources } from "@/lib/flagship-models";
+
 import { type Dispatch, type SetStateAction, useMemo } from "react";
 import { ArrowRight, CheckCircle2, ExternalLink, FlaskConical, HardDrive, ShieldCheck, Sparkles } from "lucide-react";
 import type { GeminiLabState, StageEvidence } from "@/lib/v5-state";
@@ -35,6 +37,7 @@ const benefits = [
 ] as const;
 
 const sources = [
+  ["Gemini 4 Argon announcement", "https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/"],
   ["Google AI plan comparison", "https://one.google.com/about/google-ai-plans/"],
   ["Google AI Pro benefits", "https://support.google.com/googleone/answer/14534406"],
   ["Gemini Deep Research", "https://support.google.com/gemini/answer/15719111"],
@@ -53,7 +56,7 @@ const derived = (e: StageEvidence | undefined) => {
   return new Date(`${e.retestDue}T00:00:00`) <= new Date() ? "Retained" : "Transferred";
 };
 
-export function GeminiMastery({ state, setState }: { state: GeminiLabState; setState: Dispatch<SetStateAction<GeminiLabState>> }) {
+export function GeminiMastery({ state, setState,shared=false }: { state: GeminiLabState; setState: Dispatch<SetStateAction<GeminiLabState>>;shared?:boolean }) {
   const updateStage = (id: string, patch: Partial<StageEvidence>) => setState(current => ({ ...current, stages: { ...current.stages, [id]: { ...current.stages[id], ...patch } } }));
   const toggleBenefit = (id: string) => setState(current => ({ ...current, planAudit: { ...current.planAudit, [id]: !current.planAudit[id] } }));
   const demonstrated = useMemo(() => stages.filter(([id]) => ["Demonstrated", "Transferred", "Retest Due", "Retained"].includes(derived(state.stages[id]))).length, [state.stages]);
@@ -61,10 +64,15 @@ export function GeminiMastery({ state, setState }: { state: GeminiLabState; setS
   const retained = useMemo(() => stages.filter(([id]) => derived(state.stages[id]) === "Retained").length, [state.stages]);
   const verifiedBenefits = benefits.filter(([id]) => state.planAudit[id]).length;
 
+  if(shared)return <section className="page-section gemini-zone"><h2>Gemini pathway — public view</h2><p>Private plan checks, artifacts and progress are hidden; existing learner fields are preserved.</p></section>;
   return <section className="page-section gemini-zone" aria-labelledby="gemini-title">
     <div className="gemini-heading">
       <div><div className="section-kicker">Gemini Mastery · public capability pathway</div><h2 id="gemini-title" className="section-title">Use the ecosystem. Preserve epistemic control.</h2><p className="section-intro">Fifteen evidence stages integrate Gemini into the existing 500-hour programme. Product access can expand options, but it never grants mastery. Progress still requires an artifact, a novel transfer and a delayed retest.</p></div>
       <div className="gemini-passport" aria-label="Gemini capability passport"><span>Capability passport</span><strong>{demonstrated}/15 demonstrated</strong><small>{transferred} transferred · {retained} retained</small><div className="passport-meter"><i style={{ width: `${Math.round(retained / stages.length * 100)}%` }} /></div><small>Retained evidence only; usage, storage and subscription status earn no mastery credit.</small></div>
+    </div>
+
+    <div className="pro-plan-console" aria-labelledby="gemini-argon-title">
+      <div className="plan-console-heading"><Sparkles /><div><div className="section-kicker">Model access · first-party sources</div><h3 id="gemini-argon-title">Gemini 4 Argon and Carbon</h3><p>Google announced Argon access in the Gemini app for Google AI Pro and Ultra and through the paid Gemini API. Its October update describes Carbon as pre-release testing. Check the model selector for your account and surface.</p><p><a href={flagshipSources.argonApp} target="_blank" rel="noreferrer">Argon app availability</a> · <a href={flagshipSources.carbon} target="_blank" rel="noreferrer">Carbon rollout update</a></p></div></div>
     </div>
 
     <div className="pro-plan-console">

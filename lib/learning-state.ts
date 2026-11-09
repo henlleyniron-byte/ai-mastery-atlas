@@ -270,7 +270,10 @@ export function importLearningState(input: string | unknown, curriculum: Curricu
     } else {
       warnings.push("Original track evidence is retained separately. It does not populate new module assessments or establish v4 graduation.");
     }
-    state.migration.notes = warnings.slice(0, 100);
+    if (version === "5.0" && object(raw.migration) && typeof raw.migration.from === "string" && Array.isArray(raw.migration.notes) && raw.migration.notes.every(item=>typeof item === "string")) {
+      const history=Array.from(new Set([...raw.migration.notes as string[],...warnings]));if(history.length>100)throw new Error("Migration history exceeds the supported limit; original data was not changed.");
+      state.migration={from:raw.migration.from,notes:history};
+    } else state.migration.notes = warnings.slice(0, 100);
     return { state, warnings };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Import could not be read; no changes applied.", warnings: [] };

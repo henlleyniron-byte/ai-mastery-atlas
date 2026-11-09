@@ -1,0 +1,6 @@
+export type AssessmentDraft={schema:'atlas-assessment-draft-v1';unitId:string;fields:Record<string,string|boolean>};
+export function openAssessmentDraft(storage:Pick<Storage,'getItem'|'setItem'>,unitId:string){
+ const key='atlas-assessment-draft-v12:'+unitId;let raw:string|null=null,value:AssessmentDraft|undefined,problem='';
+ try{raw=storage.getItem(key);if(raw){const parsed=JSON.parse(raw);if(parsed.schema!=='atlas-assessment-draft-v1'||parsed.unitId!==unitId||!parsed.fields||typeof parsed.fields!=='object'||Array.isArray(parsed.fields)||Object.values(parsed.fields).some(item=>!['string','boolean'].includes(typeof item)))throw Error();value=parsed;}}catch{problem='Unsubmitted draft could not be read. Its exact bytes are kept; automatic draft saving is paused.';}
+ return {key,raw,value,problem,save(fields:Record<string,string|boolean>){if(problem)throw Error(problem);if(storage.getItem(key)!==raw)throw Error('Another tab changed this task draft. Export your visible work before reloading.');const draft:AssessmentDraft={schema:'atlas-assessment-draft-v1',unitId,fields};const text=JSON.stringify(draft);if(text.length>100000)throw Error('Assessment draft is too large. Export the visible fields.');storage.setItem(key,text);raw=text;value=draft;return draft;}};
+}

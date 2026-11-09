@@ -102,6 +102,7 @@ export const operatorLayers = [
 
 export const modelRoles = [
   ["Current frontier", "GPT-6 Astra", "Hard end-to-end reasoning, coding, computer use, research and polished professional work when available."],
+  ["High-value workhorse", "GPT-6.1 Sol", "Start here for most demanding everyday coding, document and research workflows; escalate to Astra when a measured task requires it."],
   ["Fast / everyday", "Available balanced or low-cost model", "Routine drafting, extraction, classification and quick iteration where frontier depth is unnecessary."],
   ["Specialist / legacy", "Task-specific or older model", "Keep it only when controlled evaluation shows a distinct advantage, compatibility need or lower cost."],
   ["Pro / high compute", "GPT-6 Astra Pro / documented pro mode", "The launch names Astra Pro for Pro, Business and Enterprise. Evaluate whether extra computation improves your task enough to justify its time and usage."],

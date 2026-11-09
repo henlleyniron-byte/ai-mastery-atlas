@@ -1,7 +1,13 @@
 "use client";
 
-import { type ReactNode, type SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, type ReactNode, type SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { AtlasFinder } from "@/components/atlas-finder";
+import { LearningWorkspace } from "@/components/learning-workspace";
+import {useCoreImportGuard,useImportAwareState} from "@/components/core-import-guard";
+import { BeginnerAcademy, EvaluationWorkbench, KnowledgeSystemsStudio, OperatorCore, PaperAnalysisStudio } from "@/components/specialist-labs";
+
+import { checkpointWriter as createSnapshotWriter, preservationIssues } from "@/lib/storage-preservation";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,22 +17,27 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OperatorCore } from "@/components/operator-core";
-import { KnowledgeSystemsStudio } from "@/components/knowledge-systems-studio";
+import { flagshipRelease } from "@/lib/flagship-models";
+import { FrontierUpdate } from "@/components/frontier-update";
+import { CurrentGuide } from "@/components/current-guide";
+import { currentSourceRegister, guidanceChecked } from "@/lib/current-guidance";
+import { WorkflowReview } from "@/components/workflow-review";
+import { SubjectStudyLab } from "@/components/subject-study-lab";
+import { V6ModelRegistry } from "@/components/v6-model-registry";
 import { SkillsPassport } from "@/components/skills-passport";
 import { V4CommandCentre, type UnitDetail } from "@/components/v4-command-centre";
 import { lessonData, type LessonContent } from "@/lib/lesson-data";
 import { expansionTracks } from "@/lib/expansion-track-data";
 import { astraLessons, astraTrackTitle } from "@/lib/astra-track";
 import {
-  defineCurriculum, importLearningState, newLearningState, progressMinutes, sanitizeLegacyRecord, validDate,
+  deriveProgress, defineCurriculum, importLearningState, newLearningState, progressMinutes, sanitizeLegacyRecord, validDate,
   type LearningState,
 } from "@/lib/learning-state";
 import { domainsFor, levelFor, levels, levelTargets } from "@/lib/programme";
 import { newStudioState, sanitizeStudioState, type StudioState } from "@/lib/astra-studio";
 import { migrateLegacyPublicLabs, type BenchmarkRun, type ClaudeLabState, type GeminiLabState } from "@/lib/v5-state";
 import {
-  AlertTriangle, ArrowRight, CalendarClock, CheckCircle2, ChevronRight, Clock3, Compass, Download, ExternalLink,
+  AlertTriangle, ArrowRight, CalendarClock, CheckCircle2, ChevronRight, Download, ExternalLink,
   FlaskConical, Layers3, ListChecks, Orbit, RotateCcw, Search, ShieldCheck, Sparkles, Trophy, Upload, Zap,
 } from "lucide-react";
 
@@ -38,6 +49,12 @@ type RouteName = "Essential" | "Builder" | "Advanced";
 type NeedLevel = "Essential" | "Useful" | "Specialist" | "Optional" | "Curiosity";
 type Depth = "Simple" | "Practical" | "Technical";
 type Status = "Unseen" | "Learned" | "Practised" | "Demonstrated" | "Transferred" | "Retest Due" | "Mastered" | "Needs Repair" | "Later" | "Skipped with reason";
+
+export function matchesTrackProgressFilter(progressFilter: string, status: Status): boolean {
+  return progressFilter === "All"
+    || (progressFilter === "Active" && ["Learned", "Practised", "Demonstrated", "Transferred", "Needs Repair", "Retest Due"].includes(status))
+    || status === progressFilter;
+}
 
 type TrackProgress = {
   status: Status;
@@ -560,6 +577,7 @@ const resource = (
 });
 
 export const resources: Resource[] = [
+  resource("google-genai-foundations", "Learn about generative AI", "Google Gemini Apps Help", "https://support.google.com/gemini/answer/13954172?hl=en", "Official docs", "5m selected", "Beginner", "Essential", "Core", "AI literacy", "Gemini", "A short foundation on generative AI, hallucinations, checking factual claims and reviewing generated code. Read critically: tool-enabled assistants can retrieve sources, but their answers still need verification.", false, true, "2026-10-24", "Active"),
   resource("r01", "Elements of AI", "University of Helsinki", "https://www.elementsofai.com/", "Course", "15h selected", "Beginner", "Essential", "Core", "AI literacy", "Tool-neutral", "Calm, nontechnical foundations with real exercises.", true),
   resource("r02", "AI for Everyone", "DeepLearning.AI", "https://www.deeplearning.ai/courses/ai-for-everyone", "Course", "6h", "Beginner", "Essential", "Deep dive", "AI literacy", "Tool-neutral", "A realistic map of AI capabilities, projects and limitations.", true),
   resource("r03", "But what is a neural network?", "3Blue1Brown", "https://www.youtube.com/watch?v=aircAruvnKk", "Video", "19m", "Beginner", "Essential", "Core", "Neural networks", "Tool-neutral", "The clearest visual first contact with neural networks.", true),
@@ -712,6 +730,8 @@ export const resources: Resource[] = [
   resource("r148", "Jules getting started", "Google", "https://jules.google/docs/", "Official docs", "35m", "Intermediate", "Builder", "Core", "AI coding", "Jules", "Official starting point for asynchronous repository tasks; verify plan access and review every proposed change.", false, true, "2026-09-08", "Changing"),
   resource("r149", "ChatGPT release notes", "OpenAI", "https://help.openai.com/en/articles/6825453-chatgpt-release-notes", "Official docs", "20m selected", "Intermediate", "Essential", "Core", "Product change survival", "ChatGPT Work + Codex", "Dated release evidence for inspecting what changed, what remains conditional on access, and whether a workflow needs a small routing update rather than a rewrite.", false, true, "2026-09-13", "Changing"),
   resource("r150", "MCP 2026-07-28 specification changes", "Model Context Protocol", "https://blog.modelcontextprotocol.io/posts/2026-07-28/", "Official docs", "25m selected", "Advanced", "Builder", "Core", "MCP protocol", "MCP", "Official change record for verifying protocol version, transport/session assumptions and deprecations before configuring a client or server.", false, true, "2026-09-13", "Changing"),
+  ...currentSourceRegister.map(item => resource(item.id, item.title, "creator" in item ? item.creator : "OpenAI", item.url, "Official docs", "15m selected", "Beginner", "Essential", "Core", item.topic, item.tool, item.why, false, true, guidanceChecked, item.status)),
+
 ];
 
 const claudeResourcePlacements: Array<[string, number, string[]]> = [
@@ -728,7 +748,7 @@ for (const [trackId, moduleIndex, ids] of claudeResourcePlacements) {
 }
 
 const geminiResourcePlacements: Array<[string, number, string[]]> = [
-  ["e4", 0, ["r139", "r140", "r143"]],
+  ["e4", 0, ["r139", "r140", "r143", "google-genai-foundations"]],
   ["e4", 1, ["r141", "r142"]],
   ["b3", 3, ["r144", "r145", "r146"]],
   ["b4", 5, ["r147", "r148"]],
@@ -741,10 +761,22 @@ for (const [trackId, moduleIndex, ids] of geminiResourcePlacements) {
 }
 
 const freshnessResourcePlacements: Array<[string, number, string[]]> = [
-  ["e3", 2, ["r149"]],
-  ["e3", 3, ["r149"]],
+  ["e4", 0, ["r159"]],
+  ["e3", 0, ["r158"]],
+  ["e3", 1, ["r154"]],
+  ["e3", 2, ["r149", "r153", "r155", "r156"]],
+  ["e3", 3, ["r149", "r151", "r152", "r157"]],
   ["b6", 1, ["r150"]],
 ];
+for (const reference of resources) {
+  if (["r11", "r20", "r128", "r129", "r144"].includes(reference.id)) {
+    reference.lastVerified = guidanceChecked;
+    reference.verification = "Fetched";
+    reference.status = "Changing";
+    reference.versionRelevance = `Recheck after product changes · ${guidanceChecked}`;
+  }
+}
+
 for (const [trackId, moduleIndex, ids] of freshnessResourcePlacements) {
   const track = tracks.find(item => item.id === trackId);
   const lessonModule = track?.modules[moduleIndex];
@@ -1030,15 +1062,34 @@ function ResourceLink({ item, compact = false }: { item: Resource; compact?: boo
 }
 
 export default function Home() {
-  const [depth, setDepth] = useState<Depth>("Simple");
-  const [experience, setExperience] = useState("Complete beginner");
-  const [goal, setGoal] = useState("Use AI well");
-  const [studentSafe, setStudentSafe] = useState(true);
-  const [available, setAvailable] = useState<string[]>([]);
-  const [progressRecords, setProgressRecords] = useState<Record<string, TrackProgress>>({});
-  const [learningState, setLearningState] = useState<LearningState>(newLearningState);
-  const [studio, setStudio] = useState<StudioState>(newStudioState);
+  const [shareView, setShareView] = useState(false);
+  const coreImport=useCoreImportGuard(shareView);
+  const privateCoreView=coreImport.privateNow;
+  const retireCoreImport=coreImport.invalidate;
+  const [privateDepth, setDepth] = useImportAwareState<Depth>("Simple",coreImport.invalidate,privateCoreView);
+  const [privateExperience, setExperience] = useImportAwareState("Complete beginner",coreImport.invalidate,privateCoreView);
+  const [privateGoal, setGoal] = useImportAwareState("Use AI well",coreImport.invalidate,privateCoreView);
+  const [privateStudentSafe, setStudentSafe] = useImportAwareState(true,coreImport.invalidate,privateCoreView);
+  const [privateAvailable, setAvailable] = useImportAwareState<string[]>([],coreImport.invalidate,privateCoreView);
+  const [privateProgressRecords, setProgressRecords] = useImportAwareState<Record<string, TrackProgress>>({},coreImport.invalidate,privateCoreView);
+  const [privateLearningState, setLearningState] = useImportAwareState<LearningState>(newLearningState,coreImport.invalidate,privateCoreView);
+  const [assessmentUnitId, setAssessmentUnitId] = useState<string | undefined>();
+  const openAssessmentUnit = (id: string) => {
+    setAssessmentUnitId(id);setFocusMode(false);
+    const target=new URL(location.href);target.searchParams.set("unit",id);target.hash="command-centre";history.replaceState(null,"",target);
+    requestAnimationFrame(()=>{document.getElementById("command-centre")?.scrollIntoView({block:"start"});document.getElementById("command-centre-title")?.focus({preventScroll:true});});
+  };
+  const [privateStudio, setStudio] = useImportAwareState<StudioState>(newStudioState,coreImport.invalidate,privateCoreView);
+  const publicLearningState=useMemo(()=>newLearningState(),[]),publicStudio=useMemo(()=>newStudioState(),[]);
+  // Public projections change rendered values only; all private state remains in
+  // its existing hooks and never enters the autosave queue while shared.
+  const depth=shareView?"Simple":privateDepth,experience=shareView?"Complete beginner":privateExperience,goal=shareView?"Use AI well":privateGoal,studentSafe=shareView?true:privateStudentSafe;
+  const available=useMemo(()=>shareView?[]:privateAvailable,[shareView,privateAvailable]);
+  const progressRecords=useMemo(()=>shareView?{}:privateProgressRecords,[shareView,privateProgressRecords]);
+  const learningState=shareView?publicLearningState:privateLearningState,studio=shareView?publicStudio:privateStudio;
   const [query, setQuery] = useState("");
+  const [openTracks, setOpenTracks] = useState<string[]>([]);
+  const [roadmapTarget, setRoadmapTarget] = useState("");
   const [routeFilter, setRouteFilter] = useState("All");
   const [levelFilter, setLevelFilter] = useState("All");
   const [needFilter, setNeedFilter] = useState("All");
@@ -1049,8 +1100,31 @@ export default function Home() {
   const [freshnessFilter, setFreshnessFilter] = useState("All");
   const [showAllResources, setShowAllResources] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [stateMessage, setStateMessage] = useState("");
+  const snapshotWriter = useRef<ReturnType<typeof createSnapshotWriter> | null>(null);
+  const [privateStateMessage, setStateMessage] = useState("");
+  const stateMessage=shareView?"Private browser evidence is hidden in Share-safe mode.":privateStateMessage;
+  const [storageBlocked,setStorageBlocked]=useState(true);
+  const openedRaw = useRef<string | null>(null);
+  const openedPayload = useRef<Record<string,unknown>>({});
+  const [focusMode, setFocusMode] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
+  useEffect(()=>{const sync=()=>setShareView(new URLSearchParams(location.search).get("share")==="1");sync();window.addEventListener("popstate",sync);window.addEventListener("hashchange",sync);return()=>{window.removeEventListener("popstate",sync);window.removeEventListener("hashchange",sync);};},[]);
+  useEffect(()=>{const input=importRef.current;input?.addEventListener("cancel",retireCoreImport);return()=>input?.removeEventListener("cancel",retireCoreImport);},[retireCoreImport]);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const typing = event.target instanceof HTMLElement && (event.target.matches("input,textarea,select") || event.target.isContentEditable);
+      if (((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") || (!typing && event.key === "/")) {
+        event.preventDefault();
+        setFocusMode(false);
+        requestAnimationFrame(() => {
+          document.getElementById("atlas-finder-query")?.focus();
+          document.getElementById("atlas-finder")?.scrollIntoView({ behavior: "auto", block: "start" });
+        });
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   const statuses = useMemo(() => Object.fromEntries(Object.entries(progressRecords).map(([id, record]) => [id, record.status])) as Record<string, Status>, [progressRecords]);
   const effectiveLearningState = useMemo<LearningState>(() => ({
     ...learningState,
@@ -1059,13 +1133,25 @@ export default function Home() {
       ...Object.fromEntries(Object.entries(progressRecords).filter(([id]) => /^[ebas][0-7]$/.test(id))),
     },
   }), [learningState, progressRecords]);
+  const preservedLearningState=useMemo<LearningState>(()=>({...privateLearningState,legacyTracks:{...privateLearningState.legacyTracks,...Object.fromEntries(Object.entries(privateProgressRecords).filter(([id])=>/^[ebas][0-7]$/.test(id)))}}),[privateLearningState,privateProgressRecords]);
+  const currentCoreHead=()=>JSON.stringify({...openedPayload.current,...effectiveLearningState,version:"5.0",schemaVersion:"5.0",atlasPreferences:{depth,experience,goal,studentSafe,available},trackProgress:progressRecords,studio});
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
+        const sharing=new URLSearchParams(location.search).get("share") === "1";setShareView(sharing);if(sharing){setHydrated(true);return;}
+        snapshotWriter.current = createSnapshotWriter(localStorage, "atlas-v4-state", kind => {setStorageBlocked(true);setStateMessage(kind === "conflict"
+          ? "Another tab changed your saved progress. Autosave is paused here. Export this tab before refreshing to compare both copies."
+          : "Browser storage is unavailable or full. Changes remain in this tab; export them before leaving.");});
+        setStorageBlocked(!snapshotWriter.current.resume());
         const current = localStorage.getItem("atlas-v4-state");
-        const saved = JSON.parse(current || localStorage.getItem("atlas-v33-state") || localStorage.getItem("atlas-v32-state") || localStorage.getItem("atlas-v31-state") || localStorage.getItem("atlas-v3-state") || "{}");
+        openedRaw.current = snapshotWriter.current.openedRaw();
+        const saved = JSON.parse(openedRaw.current || "{}");
+        openedPayload.current=saved;
         const learning = importLearningState(saved, runtimeCurriculum);
+        if (current && learning.error) throw new Error("Saved progress is invalid");
+        if (openedRaw.current) { const issues=preservationIssues(saved,runtimeCurriculum,todayIso()); if(issues.length){snapshotWriter.current.pause();setStorageBlocked(true);setStateMessage("Saved evidence requires review. Autosave is paused to preserve original fields: "+issues.slice(0,3).join(" "));} }
+        const bookmarkedUnit=new URLSearchParams(location.search).get("unit");if(bookmarkedUnit&&runtimeCurriculum.byId.has(bookmarkedUnit)){setAssessmentUnitId(bookmarkedUnit);requestAnimationFrame(()=>document.getElementById("command-centre")?.scrollIntoView({block:"start"}));}
         if (learning.state) {
           const readLegacyLab = (key: string) => {
             try { return JSON.parse(localStorage.getItem(key) || "null"); }
@@ -1090,23 +1176,25 @@ export default function Home() {
         if (savedTrackProgress && typeof savedTrackProgress === "object") {
           const sanitized = sanitizeProgressRecords(savedTrackProgress);
           setProgressRecords(sanitized.progress);
-          if (sanitized.changed) setStateMessage("Imported browser state was adjusted where evidence or date order did not support the saved status.");
+          if (sanitized.changed) { snapshotWriter.current?.pause();setStorageBlocked(true);setStateMessage("Saved track evidence needs review. Autosave is paused; original records were kept."); }
         } else if (saved.statuses) {
           const migrated = migrateLegacyStatuses(saved.statuses);
           setProgressRecords(migrated.progress);
           if (migrated.changed) setStateMessage("v3.1 advanced claims were imported as Practised; add dated evidence to advance safely.");
         }
-      } catch { /* A damaged local preference should never block the public curriculum. */ }
+      } catch {
+        snapshotWriter.current?.pause();
+        setStateMessage("Saved progress could not be read. Autosave is paused to preserve it. Import a valid backup or explicitly reset browser progress to continue saving.");
+      }
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [setAvailable,setDepth,setExperience,setGoal,setLearningState,setProgressRecords,setStudentSafe,setStudio]);
 
   useEffect(() => {
-    if (!hydrated) return;
-    let noticeTimer: number | undefined;
-    try {
-      localStorage.setItem("atlas-v4-state", JSON.stringify({
+    if (!hydrated||shareView||!privateCoreView()) return;
+    snapshotWriter.current?.queue(JSON.stringify({
+        ...openedPayload.current,
         ...effectiveLearningState,
         version: "5.0",
         schemaVersion: "5.0",
@@ -1114,11 +1202,18 @@ export default function Home() {
         trackProgress: progressRecords,
         studio,
       }));
-    } catch {
-      noticeTimer = window.setTimeout(() => setStateMessage("Browser storage is unavailable or full. Changes remain in this tab; export them before leaving."), 0);
-    }
-    return () => { if (noticeTimer !== undefined) window.clearTimeout(noticeTimer); };
-  }, [depth, experience, goal, studentSafe, available, progressRecords, studio, effectiveLearningState, hydrated]);
+    const timer = window.setTimeout(() => {if(privateCoreView())snapshotWriter.current?.flush();}, 350);
+    return () => window.clearTimeout(timer);
+  }, [depth, experience, goal, studentSafe, available, progressRecords, studio, effectiveLearningState, hydrated,privateCoreView,shareView]);
+
+  useEffect(() => {
+    const flush = () => {if(!shareView&&new URLSearchParams(location.search).get("share")!=="1")snapshotWriter.current?.flush();};
+    const onVisibility = () => { if (document.hidden) flush(); };
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => { flush(); window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", onVisibility); };
+  }, [shareView]);
+  useEffect(()=>{const protectQueued=(event:BeforeUnloadEvent)=>{const writer=snapshotWriter.current;if(!writer||writer.queuedRaw()===null||writer.queuedRaw()===writer.openedRaw())return;event.preventDefault();event.returnValue="";};window.addEventListener("beforeunload",protectQueued);return()=>window.removeEventListener("beforeunload",protectQueued);},[]);
 
   const setClaudeState = (update: SetStateAction<ClaudeLabState>) => setLearningState((current) => ({
     ...current,
@@ -1166,10 +1261,8 @@ export default function Home() {
   const filteredTracks = useMemo(() => tracks.filter((track) => {
     const haystack = `${track.code} ${track.title} ${track.simple} ${track.outcome}`.toLowerCase();
     const status = progressRecords[track.id]?.status || "Unseen";
-    const matchesProgress = progressFilter === "All"
-      || (progressFilter === "Active" && ["Learned", "Practised", "Demonstrated", "Transferred"].includes(status))
-      || status === progressFilter;
-    return haystack.includes(query.toLowerCase())
+    const matchesProgress = matchesTrackProgressFilter(progressFilter, status);
+    return query.trim().toLowerCase().split(/\s+/).every(word => haystack.includes(word))
       && (routeFilter === "All" || track.route === routeFilter)
       && (levelFilter === "All" || levelFor(track.id) === levelFilter)
       && (needFilter === "All" || track.need === needFilter)
@@ -1179,7 +1272,7 @@ export default function Home() {
   const resourceTopics = Array.from(new Set(resources.map((item) => item.topic))).sort();
   const filteredResources = useMemo(() => resources.filter((item) => {
     const haystack = `${item.title} ${item.creator} ${item.topic} ${item.tool}`.toLowerCase();
-    return haystack.includes(resourceQuery.toLowerCase())
+    return resourceQuery.trim().toLowerCase().split(/\s+/).every(word => haystack.includes(word))
       && (formatFilter === "All" || item.format === formatFilter)
       && (topicFilter === "All" || item.topic === topicFilter)
       && (freshnessFilter === "All" || item.status === freshnessFilter);
@@ -1196,13 +1289,31 @@ export default function Home() {
     setShowAllResources(true);
   };
 
-  const openTrackInRoadmap = () => {
+  const openTrackInRoadmap = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    const id = event.currentTarget.hash.slice(1);
+    const trackId = id.replace(/^track-/, "");
+    setOpenTracks(current => current.includes(trackId) ? current : [...current, trackId]);
+    setRoadmapTarget(id);
     setQuery("");
     setRouteFilter("All");
     setLevelFilter("All");
     setNeedFilter("All");
     setProgressFilter("All");
   };
+
+  useEffect(() => {
+    if (!roadmapTarget) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(roadmapTarget);
+      if (!target) return;
+      target.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+      const trigger = target.querySelector<HTMLButtonElement>("button[aria-expanded]");
+      trigger?.focus({ preventScroll: true });
+      setRoadmapTarget("");
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [roadmapTarget, filteredTracks]);
 
   const updateRecord = (id: string, patch: Partial<TrackProgress>) => setProgressRecords((current) => {
     const updated = { ...(current[id] || { status: "Unseen" as Status }), ...patch };
@@ -1217,25 +1328,52 @@ export default function Home() {
     setStateMessage(`${tracks.find((track) => track.id === id)?.code} saved as ${status}. Evidence is self-reported.`);
   };
   const resetLocalState = () => {
-    if (!window.confirm("Reset the progress and preferences stored in this browser?")) return;
-    setProgressRecords({}); setAvailable([]); setDepth("Simple"); setExperience("Complete beginner"); setGoal("Use AI well"); setStudentSafe(true);
-    setLearningState(newLearningState());
-    setStudio(newStudioState());
-    try { localStorage.removeItem("atlas-v4-state"); localStorage.removeItem("atlas-v41-claude"); localStorage.removeItem("atlas-v42-gemini"); localStorage.removeItem("atlas-v33-state"); localStorage.removeItem("atlas-v32-state"); localStorage.removeItem("atlas-v31-state"); localStorage.removeItem("atlas-v3-state"); }
-    catch { setStateMessage("This tab was reset, but browser storage could not be cleared. Check site storage before leaving."); return; }
-    setStateMessage("Browser progress reset.");
+    if(!coreImport.privateNow())return;
+    if(storageBlocked||/could not|unavailable|paused|unreadable|conflict/i.test(stateMessage)){setStateMessage('Saving is paused. Export exact recovery copies and resolve the saved record before starting a fresh view.');return;}
+    const writer=snapshotWriter.current;if(!writer||!coreImport.canStart(coreImport.revision,writer))return;
+    writer.queue(currentCoreHead());const request=coreImport.begin(coreImport.revision,writer);if(!request)return;
+    try{
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      const expected=localStorage.getItem('atlas-v4-state');
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      if(!window.confirm('Start a fresh core view while retaining the exact current core copy for recovery? Other module and legacy stores will not be cleared.'))return;
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      writer.approveReplacement(expected);setStorageBlocked(false);
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      openedPayload.current={};setProgressRecords({});setAvailable([]);setDepth('Simple');setExperience('Complete beginner');setGoal('Use AI well');setStudentSafe(true);setLearningState(newLearningState());setStudio(newStudioState());setStateMessage('Fresh core view prepared. Exact original records remain in the recovery copies; no legacy store was deleted.');
+    }catch(error){if(coreImport.active(request,snapshotWriter.current))setStateMessage(error instanceof Error?error.message:'Recovery copy could not be preserved.');}
+    finally{coreImport.finish(request);}
+  };
+
+  const exportRawRecovery = () => {
+    if(!coreImport.privateNow())return;
+    let copies: unknown;try{copies=snapshotWriter.current?.copies();}catch{copies={storageUnavailable:true};}
+    const data={schema:"atlas-recovery-package-v1",openedRaw:openedRaw.current,copies,inMemoryDraft:{...effectiveLearningState,atlasPreferences:{depth,experience,goal,studentSafe,available},trackProgress:progressRecords,studio}};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));const link=document.createElement("a");link.href=url;link.download="atlas-exact-recovery-copies.json";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
   const exportLocalState = () => {
-    const payload = { ...effectiveLearningState, version: "5.0", schemaVersion: "5.0", exportedAt: new Date().toISOString(), privacy: "Self-reported evidence stored locally in the exporting browser.", atlasPreferences: { depth, experience, goal, studentSafe, available }, trackProgress: progressRecords, studio };
+    if(!coreImport.privateNow())return;
+    if(/could not|unavailable|paused|unreadable|conflict/i.test(stateMessage)){exportRawRecovery();return;}
+    const payload = { ...openedPayload.current, ...effectiveLearningState, version: "5.0", schemaVersion: "5.0", exportedAt: new Date().toISOString(), privacy: "Self-reported evidence stored locally in the exporting browser.", atlasPreferences: { depth, experience, goal, studentSafe, available }, trackProgress: progressRecords, studio };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a"); link.href = url; link.download = "ai-mastery-atlas-progress.json"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000); setStateMessage("Progress and Studio notes exported as a local JSON file.");
   };
   const importLocalState = async (file?: File) => {
-    if (!file) return;
+    if(!file){coreImport.invalidate();return;}
+    const writer=snapshotWriter.current;
+    if(!hydrated||!writer||!coreImport.canStart(coreImport.revision,writer))return;
+    if(importRef.current)importRef.current.value="";
+    // Capture all visible current fields before reading, including work which
+    // has not reached the 350 ms autosave. Queueing does not write storage.
+    writer.queue(currentCoreHead());
+    const request=coreImport.begin(coreImport.revision,writer);if(!request)return;
     try {
       if (file.size > 2_000_000) throw new Error("Import too large");
-      const payload = JSON.parse(await file.text());
+      const raw=await file.text();
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      if(new TextEncoder().encode(raw).length>2_000_000)throw new Error("Import too large");
+      const payload = JSON.parse(raw);
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("Invalid object");
       const learning = importLearningState(payload, runtimeCurriculum);
       if (!learning.state || learning.error) throw new Error(learning.error || "Invalid learning state");
@@ -1248,6 +1386,28 @@ export default function Home() {
       const sanitized = payload.statuses && !payload.progress && !payload.trackProgress
         ? migrateLegacyStatuses(payload.statuses)
         : sanitizeProgressRecords(records);
+      const issues=preservationIssues(payload,runtimeCurriculum,todayIso());
+      const unsafe=issues.filter(issue=>/Ignored unknown|Ignored malformed|Malformed|Original .* fields|Unrecognized saved field|must|Cannot|requires at least|must occur/i.test(issue));if(unsafe.length)throw new Error("Backup contains unsupported or damaged fields: "+unsafe.slice(0,3).join(" "));
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      const expected=localStorage.getItem("atlas-v4-state");
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      if (!window.confirm("Review: "+Object.keys(learning.state.units).length+" module records. "+(issues.length?issues.slice(0,3).join(" "):"No module fields need adjustment.")+" Replace this browser copy? Exact originals will be retained; other stores stay unchanged.")) return;
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      writer.approveReplacement(expected);
+      if(!coreImport.current(request,snapshotWriter.current))return;
+      const importedPreferences={
+        depth:["Simple","Practical","Technical"].includes(interfacePreferences.depth)?interfacePreferences.depth:depth,
+        experience:["Complete beginner","Confident user","Beginner coder","Working developer"].includes(interfacePreferences.experience)?interfacePreferences.experience:experience,
+        goal:["Use AI well","Study and research","Build software","Secure AI systems","Understand advanced systems"].includes(interfacePreferences.goal)?interfacePreferences.goal:goal,
+        studentSafe:typeof interfacePreferences.studentSafe==="boolean"?interfacePreferences.studentSafe:studentSafe,
+        available:Array.isArray(interfacePreferences.available)?interfacePreferences.available.filter((item:unknown)=>typeof item==="string"&&availableCategories.includes(item)):available,
+      };
+      const incomingHead=JSON.stringify({...payload,...learning.state,version:"5.0",schemaVersion:"5.0",atlasPreferences:importedPreferences,trackProgress:sanitized.progress,studio:importedStudio});
+      writer.queue(incomingHead);
+      if(!writer.flush()||writer.openedRaw()!==incomingHead)throw Error("The imported copy could not be saved safely. Current fields and queued recovery copies are retained; export before leaving.");
+      if(!coreImport.active(request,snapshotWriter.current))return;
+      setStorageBlocked(false);
+      openedPayload.current=payload;
       setLearningState(learning.state);
       if (["Simple", "Practical", "Technical"].includes(interfacePreferences.depth)) setDepth(interfacePreferences.depth);
       if (["Complete beginner", "Confident user", "Beginner coder", "Working developer"].includes(interfacePreferences.experience)) setExperience(interfacePreferences.experience);
@@ -1259,50 +1419,61 @@ export default function Home() {
       setStateMessage([...learning.warnings, ...(sanitized.changed ? ["Unsupported track claims were adjusted to their highest evidence-backed stage."] : [])].length
         ? "Progress imported safely with migration notes. Review the Command Centre before continuing."
         : `${payload.version === "5.0" ? "v5.0" : payload.version === "4.0" ? "v4.0" : payload.version === "3.3" ? "v3.3" : "v3.2"} progress imported into this browser.`);
-    } catch { setStateMessage("That file is not a valid Atlas progress export."); }
-    if (importRef.current) importRef.current.value = "";
+    } catch(error) { if(coreImport.active(request,snapshotWriter.current))setStateMessage(((storageBlocked||writer.isPaused())?"Saving is paused. ":"")+(error instanceof Error?error.message:"That file is not a valid Atlas progress export.")+" Existing records were kept."); }
+    finally{coreImport.finish(request);}
   };
 
   return (
-    <main id="main-content" className="atlas-shell min-h-screen">
+    <main id="main-content" className="atlas-shell min-h-screen" data-focus={focusMode ? "true" : "false"}>
       <a className="skip-link" href="#start">Skip to start</a>
       <header className="site-header">
-        <a href="#top" className="brand"><Orbit className="h-5 w-5" /><span>AI Mastery Atlas</span><Badge variant="outline">v5.1</Badge></a>
-        <nav aria-label="Primary navigation">
-          <a href="#start">Start</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
+        <a href="#top" className="brand"><Orbit className="h-5 w-5" /><span>AI Mastery Atlas</span><Badge variant="outline">Flagship</Badge></a>
+        <nav aria-label="Primary navigation" onClick={() => setFocusMode(false)}>
+          <a href="#top">Workspace</a><a href="#atlas-finder">Find anything</a><a href="/workflow-studio/">Practice</a><a href="#roadmap">Curriculum</a><a href="#frontier-update">Models</a><a href="#library">Sources</a>
         </nav>
         <details className="mobile-nav" onClick={(event) => {
-          if (event.target instanceof HTMLAnchorElement) event.currentTarget.removeAttribute("open");
+          if (event.target instanceof HTMLAnchorElement) { event.currentTarget.removeAttribute("open"); setFocusMode(false); }
         }}>
           <summary aria-label="Open section navigation">Explore</summary>
-          <nav aria-label="Section navigation">
-            <a href="#start">Start</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
+          <nav aria-label="Section navigation"><button type="button" aria-pressed={focusMode} onClick={event=>{setFocusMode(value=>!value);event.currentTarget.closest("details")?.removeAttribute("open");}}>{focusMode?"Show full Atlas":"Focus on practice"}</button><a href="#top">Learning workspace</a><a href="#atlas-finder">Find a lesson or tool</a>
+            <a href="#start">Start</a><a href="/workflow-studio/">Workflow Studio</a><a href="/subscription-playbook/">Subscription Playbook</a><a href="/subscription-lab/">Try one AI job</a><a href="/study-library/">Private study library</a><a href="#subject-study-lab">Study AI lab</a><a href="#paper-analysis-studio">Paper analysis</a><a href="#evaluation-workbench">Evaluate outputs</a><a href="#beginner-academy">Beginner Academy</a><a href="#frontier-update">Flagship Model Lab</a><a href="#latest-guide">Latest guide</a><a href="#command-centre">Command centre</a><a href="#knowledge-studio">Knowledge studio</a><a href="#operator-core">Operator core</a><a href="#systems-lab">Systems lab</a><a href="#roadmap">Roadmap</a><a href="#library">Library</a>
           </nav>
         </details>
         <div className="header-progress" aria-label={`${courseCompletion}% course progress; ${evidenceCompletion}% independently demonstrated`} title={`${demonstratedHours}h demonstrated · ${masteredHours}h mastered after retest`}><span>Course {courseHours}/{totalHours}h</span><Progress value={courseCompletion} /></div>
       </header>
 
-      <section id="top" className="hero-section course-grid">
-        <div className="hero-copy">
-          <div className="section-kicker">v5.1 Universal AI Systems Mastery · public Community Edition</div>
-          <h1>Choose well. Execute safely. <span>Prove what works.</span></h1>
-          <p className="hero-lead">A public, tool-neutral curriculum for understanding AI, using it responsibly, building with it and defending AI systems. It contains exactly <strong>{totalHours} structured hours</strong> across five levels, with 65% allocated to guided work, independent practice and assessment. Time completed is not the same as mastery.</p>
-          <div className="hero-actions"><Button asChild size="lg"><a href={`#track-${recommended.id}`}>{courseHours ? "Continue your next track" : "Start your first 30 minutes"} <ArrowRight /></a></Button><Button asChild variant="outline" size="lg"><a href="#roadmap">See the full roadmap</a></Button></div>
-          <div className="hero-facts">
-            <div><strong>{totalHours}</strong><span>structured hours</span></div><div><strong>{moduleCount}</strong><span>authored modules</span></div><div><strong>{resources.length}</strong><span>integrated resources</span></div><div><strong>{youtubeCount}</strong><span>YouTube links</span></div>
-          </div>
+      <div className="atlas-workbar" aria-label="Learning view controls" data-edition={flagshipRelease}>
+        <Button variant={focusMode ? "default" : "outline"} aria-pressed={focusMode} onClick={() => setFocusMode(value => !value)}>{focusMode ? "Show full Atlas" : "Focus on practice"}</Button>
+        <a href="#top">Session & review</a><a href="#atlas-finder">Find a lesson or source</a><a href="#command-centre">Evidence desk</a><a href="#frontier-update" onClick={() => setFocusMode(false)}>Flagship Model Lab</a><a href="/workflow-studio/?view=review">Workflow reviews</a>
+        <span>{focusMode ? "Practice view · your progress is unchanged" : "Search shortcut: Ctrl / ⌘ K"}</span>
+      </div>
+      {/could not|unavailable|paused|unreadable|conflict/i.test(stateMessage)?<aside className="atlas-preservation-notice" role="status"><h2>Saved records need review.</h2><p>{stateMessage}</p><button type="button" disabled={shareView} onClick={exportRawRecovery}>Export exact originals & recovery copies</button><a href="#start" onClick={()=>setFocusMode(false)}>Open backup review controls</a></aside>:null}
+      <section id="top" className="atlas-workspace-home"><LearningWorkspace shared={shareView} ready={hydrated} storageMessage={stateMessage} curriculum={runtimeCurriculum} details={runtimeUnitDetails} state={effectiveLearningState} today={todayIso()} hours={totalHours} trackCount={tracks.length} moduleCount={moduleCount} sourceCount={resources.length} recommendedTrack={recommended} onOpenUnit={openAssessmentUnit} onTrackClick={event=>{setFocusMode(false);openTrackInRoadmap(event);}} onSectionClick={()=>{setFocusMode(false);requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView({block:"start"}));}} /></section>
+
+      <FrontierUpdate />
+
+      <AtlasFinder modules={runtimeCurriculum.units.map(unit=>({id:unit.id,title:unit.title,detail:runtimeUnitDetails[unit.id]?.objective||"",trackCode:runtimeUnitDetails[unit.id]?.trackCode||"",status:deriveProgress(effectiveLearningState.units[unit.id],unit,todayIso()).stage}))} onModuleClick={openAssessmentUnit} tracks={tracks.map(track => ({id:track.id,title:track.code+" · "+track.title,detail:track.simple,keywords:[track.primary,track.outcome,...track.modules.map(module=>module.title)].join(" "),status:progressRecords[track.id]?.status||"Unseen"}))} sources={resources.map(item=>({id:item.id,title:item.title,detail:item.topic+" · "+item.tool,href:item.url}))} onTrackClick={event=>{setFocusMode(false);openTrackInRoadmap(event);}} onSectionClick={()=>setFocusMode(false)} />
+      <section id="workflow-orientation" className="page-section workflow-orientation" aria-labelledby="workflow-orientation-title">
+        <div className="section-kicker">Guided practice · protect current work and test transfer</div>
+        <div className="workflow-heading"><div><h2 id="workflow-orientation-title" className="section-title">What do you need to accomplish?</h2><p className="section-intro">Choose one bounded task. Each guided brief includes inputs, a six-step execution sequence, acceptance checks, common traps and fresh transfer. Keep assessed results in the existing evidence workspaces.</p></div><a className="workflow-all" href="/workflow-studio/">Open the practice studio →</a></div>
+        <div className="workflow-entry-grid">
+          <a href="/workflow-studio/#first-task"><span>01 / BEGIN</span><h3>Make one reliable result</h3><p>A complete fictional fixture, a constrained request and a direct source check.</p><b>Start with a small task →</b></a>
+          <a href="/workflow-studio/#tutor"><span>02 / STUDY</span><h3>Protect the first attempt</h3><p>Use source-based hints after retrieval, then test a genuinely fresh question.</p><b>Build a useful tutor →</b></a>
+          <a href="/workflow-studio/#source-ledger"><span>03 / RESEARCH</span><h3>Trace every important claim</h3><p>Build a claim ledger that preserves contradictions, dates and uncertainty.</p><b>Audit a source pack →</b></a>
+          <a href="/workflow-studio/#code-fix"><span>04 / BUILD</span><h3>Deliver a checked artifact</h3><p>Reproduce a failure, inspect the patch and leave an executable handoff.</p><b>Work through a code repair →</b></a>
         </div>
-        <aside className="hero-panel">
-          <div className="eyebrow"><Compass className="h-4 w-4" /> I’m lost—what next?</div>
-          <h2>{recommended.code} · {recommended.title}</h2>
-          <p>{recommended.simple}</p>
-          <div className="recommendation-meta"><Badge>{recommended.route}</Badge><span><Clock3 className="h-4 w-4" /> {recommended.hours}h</span><span>{recommended.need}</span></div>
-          <Button asChild className="w-full"><a href={`#track-${recommended.id}`}>Open recommended track</a></Button>
-          <small>{recommended.id === directEntry?.id && recommended.prerequisites.length ? "This is an experienced-learner diagnostic entry; audit the listed prerequisites before attempting the lab." : urgentTrack ? "Repair and due-retest work takes priority over starting another track." : "Recommendation uses prerequisites, your goal and Beginner Safe Mode. It never hides advanced material."}</small>
-        </aside>
+        <div className="workflow-bridge"><div><strong>Learning AI or preparing for A/Ls?</strong><p>Use Atlas to practise AI workflows. Use Powerhouse for independent paper attempts, marking, linked repairs and retests. Your private browser records remain separate between the two sites.</p></div><a href="https://al-performance-powerhouse.phenlleyniron.chatgpt.site/workflow-studio/">Open the study execution studio ↗</a></div>
+      </section>
+      <WorkflowReview shared={shareView} />
+
+      <section className="page-section compact-section" aria-labelledby="subscription-playbook-title">
+        <div className="section-kicker">New · practical subscription guide · 14 October 2026</div>
+        <h2 id="subscription-playbook-title" className="section-title">Make each subscription earn its place.</h2>
+        <p className="section-intro">18 written lessons for ChatGPT Plus, Claude Pro and Google AI Pro: choose a tool, search sources, repair Biology/Chemistry/Physics mistakes, and check actual value. Essentials come first; free routes remain useful.</p>
+        <div className="hero-actions"><Button asChild variant="outline"><a href="/study-library/?view=practice">Use the private practice desk</a></Button><Button asChild variant="outline"><a href="/subscription-lab/">Compare one useful AI task</a></Button><Button asChild><a href="/subscription-playbook/">Open the complete playbook</a></Button></div>
       </section>
 
-      <section id="start" className="page-section">
+      <section id="start" className="page-section" tabIndex={-1}>
         <div className="section-kicker">Start here</div>
         <h2 className="section-title">Choose a route without locking yourself into a product.</h2>
         <p className="section-intro">Your selections and progress stay in this browser’s local storage. There is no account sync or analytics payload: clearing site data removes them, and anyone using this browser profile can see them.</p>
@@ -1321,12 +1492,17 @@ export default function Home() {
         <div className="availability-card"><div><h3>What kind of access do you have?</h3><p>Choose categories, not brands. Nothing is preselected.</p></div><div className="check-grid">{availableCategories.map((item) => <label key={item}><Checkbox checked={available.includes(item)} onCheckedChange={(checked) => setAvailable((current) => checked ? [...current, item] : current.filter((entry) => entry !== item))} /> {item}</label>)}</div></div>
         <div className="progress-data-card">
           <div><ShieldCheck /><div><h3>Private learner state</h3><p>Export a portable JSON backup before clearing browser data or moving devices. Import changes only this browser; it never changes the public curriculum.</p></div></div>
-          <div className="progress-data-actions"><Button variant="outline" onClick={exportLocalState}><Download /> Export progress</Button><Button variant="outline" onClick={() => importRef.current?.click()}><Upload /> Import progress</Button><input ref={importRef} className="sr-only" aria-label="Import Atlas progress file" type="file" accept="application/json,.json" onChange={(event) => importLocalState(event.target.files?.[0])} /><span aria-live="polite">{stateMessage}</span></div>
+          {!shareView?<p className="section-copy">New progress is saved separately from older versions. Export current progress before a rollback; older versions display their own last save.</p>:null}<div className="progress-data-actions"><Button variant="outline" disabled={shareView} onClick={exportLocalState}><Download /> Export progress</Button><Button variant="outline" disabled={shareView} onClick={() => {if(coreImport.privateNow())importRef.current?.click();}}><Upload /> Import progress</Button><input ref={importRef} className="sr-only" aria-label="Import Atlas progress file" type="file" accept="application/json,.json" onChange={(event) => importLocalState(event.target.files?.[0])} /><span aria-live="polite">{stateMessage}</span></div>{coreImport.reading?<aside role="status"><p>Reading progress backup. Current fields are unchanged; a new edit, selection or Share-safe transition cancels this read.</p><button type="button" onClick={()=>{if(!coreImport.privateNow())return;coreImport.invalidate();setStateMessage("Progress import cancelled. Current fields and queued work remain unchanged.");}}>Cancel progress import</button></aside>:null}
         </div>
       </section>
 
-      <V4CommandCentre curriculum={runtimeCurriculum} details={runtimeUnitDetails} state={effectiveLearningState} onChange={setLearningState} />
+      <V4CommandCentre curriculum={runtimeCurriculum} shareSafe={shareView} details={runtimeUnitDetails} state={preservedLearningState} onChange={setLearningState} selectedUnitId={assessmentUnitId} onSelectUnit={setAssessmentUnitId} writable={hydrated && !shareView && !storageBlocked && !/could not|unavailable|paused|unreadable|conflict/i.test(stateMessage)} />
       <SkillsPassport curriculum={runtimeCurriculum} state={effectiveLearningState} today={todayIso()} />
+      <SubjectStudyLab shared={shareView} />
+      <PaperAnalysisStudio shared={shareView} />
+      <EvaluationWorkbench shared={shareView} />
+      <BeginnerAcademy shared={shareView} />
+      <V6ModelRegistry />
       <KnowledgeSystemsStudio />
 
       <section className="page-section proof-sprint" aria-labelledby="proof-sprint-title">
@@ -1348,11 +1524,12 @@ export default function Home() {
         <div className="boundary-grid">{productBoundaries.map(([name, job, use, avoid]) => <article key={name}><h3>{name}</h3><strong>{job}</strong><p><span>Use:</span> {use}</p><p><span>Avoid:</span> {avoid}</p></article>)}</div>
       </section>
 
-      <OperatorCore studio={studio} onStudioChange={setStudio} />
+      <div id="latest-guide"><CurrentGuide /></div>
+      <OperatorCore shared={shareView} studio={privateStudio} onStudioChange={setStudio} />
 
-      <div id="claude-mastery"><ClaudeMastery state={learningState.publicLabs.claude} setState={setClaudeState} /></div>
-      <div id="gemini-mastery"><GeminiMastery state={learningState.publicLabs.gemini} setState={setGeminiState} /></div>
-      <div id="systems-lab"><V5SystemsLab runs={learningState.publicLabs.benchmarks} setRuns={setBenchmarkRuns} /></div>
+      <div id="claude-mastery"><ClaudeMastery shared={shareView} state={learningState.publicLabs.claude} setState={setClaudeState} /></div>
+      <div id="gemini-mastery"><GeminiMastery shared={shareView} state={learningState.publicLabs.gemini} setState={setGeminiState} /></div>
+      <div id="systems-lab"><V5SystemsLab shared={shareView} runs={learningState.publicLabs.benchmarks} setRuns={setBenchmarkRuns} /></div>
 
       <section className="page-section compact-section">
         <div className="principle-grid">
@@ -1379,14 +1556,15 @@ export default function Home() {
         <div className="metrics-row"><span><CheckCircle2 /> Course progress: <strong>{courseHours}h</strong></span><span><FlaskConical /> Practised+: <strong>{practisedHours}h</strong></span><span><Trophy /> Demonstrated: <strong>{demonstratedHours}h</strong></span><span><ShieldCheck /> Retest mastery: <strong>{masteredHours}h</strong></span><span><Layers3 /> Authored modules: <strong>{moduleCount}</strong></span><span><Trophy /> Track assessments: <strong>{labCount}</strong></span></div>
 
         <div className="filter-bar curriculum-filters">
-          <div className="search-wrap"><Search /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tracks, outcomes or concepts…" aria-label="Search curriculum" /></div>
+          <div className="search-wrap"><Search /><Input id="curriculum-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search tracks, outcomes or concepts…" aria-label="Search curriculum" /></div>
           <Select value={levelFilter} onValueChange={setLevelFilter}><SelectTrigger aria-label="Filter by level"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="All">All levels</SelectItem>{levels.map((level) => <SelectItem key={level} value={level}>{level}</SelectItem>)}</SelectContent></Select>
           <Select value={routeFilter} onValueChange={setRouteFilter}><SelectTrigger aria-label="Filter by route"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="All">All routes</SelectItem>{routeOrder.map((route) => <SelectItem key={route} value={route}>{route}</SelectItem>)}</SelectContent></Select>
           <Select value={needFilter} onValueChange={setNeedFilter}><SelectTrigger aria-label="Filter by priority"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="All">All priorities</SelectItem>{(["Essential", "Useful", "Specialist", "Optional", "Curiosity"] as NeedLevel[]).map((need) => <SelectItem key={need} value={need}>{need}</SelectItem>)}</SelectContent></Select>
           <Select value={progressFilter} onValueChange={setProgressFilter}><SelectTrigger aria-label="Filter by learning status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="All">All learning statuses</SelectItem><SelectItem value="Active">Active learning</SelectItem><SelectItem value="Needs Repair">Needs Repair</SelectItem><SelectItem value="Retest Due">Retest Due</SelectItem><SelectItem value="Mastered">Mastered</SelectItem><SelectItem value="Unseen">Not started</SelectItem></SelectContent></Select>
         </div>
 
-        <div className="track-list"><Accordion type="multiple" className="space-y-3">{filteredTracks.map((track) => {
+        <div className="atlas-filter-summary"><p role="status">{filteredTracks.length} of {tracks.length} tracks match your filters.</p><Button variant="outline" onClick={() => { setQuery(""); setLevelFilter("All"); setRouteFilter("All"); setNeedFilter("All"); setProgressFilter("All"); }}>Clear track filters</Button></div>
+        <div className="track-list"><Accordion type="multiple" value={openTracks} onValueChange={setOpenTracks} className="space-y-3">{filteredTracks.map((track) => {
           const trackResources = track.resourceIds.map((id) => resources.find((item) => item.id === id)).filter(Boolean) as Resource[];
           const currentStatus = statuses[track.id] || "Unseen";
           const currentRecord = progressRecords[track.id] || { status: "Unseen" as Status };
@@ -1437,7 +1615,7 @@ export default function Home() {
               </div> : <div className="evidence-panel v4-evidence-route"><div><h4>Record this track module by module</h4><p>v4 does not award this track as one click. Use the Command Centre to record each lesson, independent result, transfer and delayed retest.</p></div><a href="#command-centre">Open the v4 evidence workflow <ArrowRight /></a></div>}
             </AccordionContent>
           </AccordionItem>;
-        })}</Accordion>{!filteredTracks.length && <div className="empty-state">No tracks match those filters.</div>}</div>
+        })}</Accordion>{!filteredTracks.length && <div className="empty-state">No tracks match those filters. Clear the filters to see the full roadmap.</div>}</div>
       </section>
 
       <section id="videos" className="page-section feature-section">
@@ -1460,7 +1638,7 @@ export default function Home() {
 
       <section id="library" className="page-section">
         <div className="section-kicker">Resource library</div><h2 className="section-title">{resources.length} sources, each connected to a lesson.</h2>
-        <p className="section-intro">Core register checked 1 September 2026; frontier product documentation and plan guidance rechecked through 8 September 2026. Official documentation and standards are preferred for changing product behaviour. “Search-confirmed” means a host blocked direct fetching but the exact title, creator and destination were confirmed in search.</p>
+        <p className="section-intro">October guidance and the November flagship update have separate verification dates. Older references retain their individual audit dates; this update does not certify the entire historical library as freshly checked. Official documentation and standards are preferred for changing product behaviour. “Search-confirmed” means a host blocked direct fetching but the exact title, creator and destination were confirmed in search.</p>
         <div className="library-stats"><div><strong>{resources.length}</strong><span>integrated sources</span></div><div><strong>{officialCount}</strong><span>official docs & standards</span></div><div><strong>{youtubeCount}</strong><span>YouTube links</span></div><div><strong>{courseCount}</strong><span>courses</span></div></div>
         <p className="section-intro" aria-label="Resource freshness summary">Freshness register: {resourceStatusCounts.Active} active · {resourceStatusCounts["Changing"]} changing · {resourceStatusCounts["Rolling out"]} rolling out · {resourceStatusCounts["Review needed"]} review needed. Filter changing or review-needed sources before relying on volatile product guidance.</p>
         <div className="filter-bar">
@@ -1494,12 +1672,13 @@ export default function Home() {
       </section>
 
       <section id="changelog" className="page-section compact-section" aria-labelledby="changelog-title">
-        <div className="section-kicker">Release candidate · 9 September 2026</div><h2 id="changelog-title" className="section-title">v5.0 — Universal AI Systems Mastery</h2>
+        <div className="section-kicker">Earlier release · 6 October 2026</div><h2 id="changelog-title" className="section-title">Current guidance, practical workflows and independent checks</h2>
+        <p className="section-intro">v5.2 adds nine source-linked product and lifecycle updates, six practice workflows with copyable prompts, privacy and independent-thinking guidance, and a refreshed model register including Luna, Gemini 3.8 Flash and Gemini 4 Argon. Current sources are integrated into the ChatGPT and Gemini tracks. The 500-hour curriculum and existing learner records remain compatible. Earlier curriculum improvements remain below.</p>
         <div className="boundary-grid"><article><h3>Durable model roles</h3><p>Model selection now begins with capability classes and task evidence, while volatile product names remain a dated application layer.</p></article><article><h3>Benchmark intelligence</h3><p>The new explorer distinguishes benchmark families, scope limits and fair-comparison controls; a local lab records the learner’s own frozen-task evidence.</p></article><article><h3>Failure + economics</h3><p>Fifteen operational failure modes now teach symptom, cause, detection, prevention and recovery, alongside cost-per-success routing.</p></article><article><h3>Unified state</h3><p>Claude, Gemini and personal benchmark records now migrate into one sanitised V5 export. No private entitlement or billing values are present in the public bundle.</p></article></div>
       </section>
 
       <section className="page-section final-section">
-        <div><div className="section-kicker">Version 5.1 · Community Edition · October 2026</div><h2>Understand systems. Test claims. Route from evidence.</h2><p>Curriculum: exactly {totalHours} structured hours across {tracks.length} tracks, {moduleCount} authored modules and {labCount} track assessments. Resource register: {resources.length} integrated entries. The v5.1 interface adds guided next-step routing, Beginner Safe Mode, freshness-aware filtering and evidence-gated progression on top of the V5 curriculum—without padding hours or exposing private entitlements.</p></div>
+        <div><div className="section-kicker">Universal AI Systems Mastery · updated 6 October 2026</div><h2>Understand systems. Test claims. Route from evidence.</h2><p>Curriculum: exactly {totalHours} structured hours across {tracks.length} tracks, {moduleCount} authored modules and {labCount} track assessments. Resource register: {resources.length} integrated entries. The current guide turns product updates into bounded practice. Use one workflow, verify the result and return to your main task.</p></div>
         <div className="final-actions"><Button asChild size="lg"><a href="#start">Return to start</a></Button><Button variant="ghost" onClick={resetLocalState}><RotateCcw /> Reset browser progress</Button></div>
       </section>
 

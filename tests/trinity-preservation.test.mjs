@@ -1,0 +1,61 @@
+import test,{after} from 'node:test';import assert from 'node:assert/strict';import {createServer} from 'vite';
+const vite=await createServer({configFile:false,appType:'custom',optimizeDeps:{noDiscovery:true,include:[]},server:{middlewareMode:true,hmr:false,ws:false}});after(()=>vite.close());const {preservationIssues,checkpointWriter}=await vite.ssrLoadModule('/lib/storage-preservation.ts'),{newLearningState,importLearningState}=await vite.ssrLoadModule('/lib/learning-state.ts'),{openAssessmentDraft}=await vite.ssrLoadModule('/lib/assessment-draft.ts');const curriculum={units:[],byId:new Map(),levelByTrack:new Map()},today='2026-10-19';
+const disk=initial=>{const data=new Map(initial?[['atlas-v4-state',initial]]:[]);return {data,getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value),keys:()=>[...data.keys()],removeItem:key=>data.delete(key)}};
+test('valid current records and original migration notes survive rehydration',()=>{const raw=newLearningState();raw.migration={from:'3.3',notes:['Original migration explanation']};assert.deepEqual(preservationIssues(raw,curriculum,today),[]);assert.deepEqual(importLearningState(raw,curriculum,today).state.migration,raw.migration);});
+test('unknown units, future schemas and extra root fields require review rather than silent normalization',()=>{for(const mutate of [v=>v.units.unknown={events:[]},v=>v.schemaVersion='99.0',v=>v.privateFutureField='Preserve this']){const raw=newLearningState();mutate(raw);const before=JSON.stringify(raw);assert.ok(preservationIssues(raw,curriculum,today).length);assert.equal(JSON.stringify(raw),before);}});
+test('older-tab overwrites leave a recoverable exact candidate checkpoint and pause on reopening',()=>{const raw=JSON.stringify(newLearningState()),s=disk(raw),problems=[],writer=checkpointWriter(s,'atlas-v4-state',v=>problems.push(v));writer.resume();const next=JSON.stringify({...newLearningState(),atlasPreferences:{depth:'Practical'}});writer.queue(next);writer.flush();const legacy=JSON.stringify({...newLearningState(),route:'builder'});s.setItem('atlas-v4-state',legacy);const newer=checkpointWriter(s,'atlas-v4-state',v=>problems.push(v));assert.equal(newer.resume(),false);assert.equal(JSON.parse(newer.copies().checkpointRaw).head,next);assert.equal(s.getItem('atlas-v4-state'),legacy);});
+test('a stalled isolated checkpoint write leaves legacy bytes and the pending proposal recoverable',()=>{const raw=JSON.stringify(newLearningState()),s=disk(raw),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();const set=s.setItem;s.setItem=(key,value)=>{if(key==='atlas-v4-state__trinity_checkpoint_v1')throw Error('Interrupted');set(key,value)};const pending=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'Study and research'}});writer.queue(pending);writer.flush();assert.equal(s.getItem('atlas-v4-state'),raw);assert.ok(writer.copies().pendingWrites.some(row=>JSON.parse(row.raw).head===pending));});
+test('reviewed replacement checks preview freshness and retains the exact original',()=>{const s=disk('{unreadable'),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();assert.throws(()=>writer.approveReplacement('stale'));writer.approveReplacement('{unreadable');const next=JSON.stringify(newLearningState());writer.queue(next);writer.flush();assert.equal(s.getItem('atlas-v4-state'),'{unreadable');assert.equal(writer.openedRaw(),next);assert.equal(JSON.parse(writer.copies().originalRaw)[0].raw,'{unreadable');const reopened=checkpointWriter(s,'atlas-v4-state',()=>{});assert.equal(reopened.resume(),true);assert.equal(reopened.openedRaw(),next);});
+test('task drafts remain separate from evidence and reject stale overwrites',()=>{const s=disk(),a=openAssessmentDraft(s,'e0-m1'),b=openAssessmentDraft(s,'e0-m1');a.save({note:'Unsubmitted first task',date:today});assert.throws(()=>b.save({note:'Stale draft'}));assert.equal(s.getItem('atlas-v4-state'),null);assert.equal(openAssessmentDraft(s,'e0-m2').value,undefined);assert.equal(openAssessmentDraft(s,'e0-m1').value.fields.note,'Unsubmitted first task');});
+
+test('the first candidate write preserves the exact V11-style original',()=>{const raw=JSON.stringify(newLearningState()),s=disk(raw),w=checkpointWriter(s,'atlas-v4-state',()=>{});w.resume();w.queue(JSON.stringify({...newLearningState(),route:'builder'}));w.flush();assert.equal(JSON.parse(w.copies().originalRaw)[0].raw,raw);});
+
+test('an older version label cannot mask an unsupported or contradictory schemaVersion',()=>{const value={...newLearningState(),version:'5.0',schemaVersion:'999.0'};assert.match(preservationIssues(value,curriculum,today).join(' '),/Unsupported/);assert.match(preservationIssues({...value,schemaVersion:'4.0'},curriculum,today).join(' '),/Conflicting/);});
+
+test('documented V4.0-A display labels retain the historical 3.3 schema compatibility',()=>{const issues=preservationIssues({schemaVersion:'3.3',version:'4.0',progress:{}},curriculum,today);assert.equal(issues.some(issue=>/Conflicting|Unsupported stored schema/.test(issue)),false);});
+
+test('overlapping Atlas writes preserve both proposed learner copies',()=>{const s=disk(JSON.stringify(newLearningState())),issues=[],a=checkpointWriter(s,'atlas-v4-state',v=>issues.push(v)),b=checkpointWriter(s,'atlas-v4-state',v=>issues.push(v));a.resume();b.resume();const first=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'Candidate A'}}),second=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'Candidate B'}}),write=s.setItem;let interleaved=false;s.setItem=(key,value)=>{write(key,value);if(key==='atlas-v4-state__trinity_checkpoint_v1'&&!interleaved){interleaved=true;b.queue(second);b.flush();}};a.queue(first);a.flush();assert.equal(s.getItem('atlas-v4-state'),JSON.stringify(newLearningState()));assert.equal(a.openedRaw(),first);const reopened=checkpointWriter(s,'atlas-v4-state',v=>issues.push(v));assert.equal(reopened.resume(),false);assert.ok(reopened.copies().pendingWrites.some(row=>row.raw.includes('Candidate B')));});
+
+
+test('a legacy write in the final checkpoint gap remains separately recoverable',()=>{const raw=JSON.stringify(newLearningState()),s=disk(raw),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();const proposed=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'New candidate work'}}),legacy=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'Late legacy work'}}),write=s.setItem;let injected=false;s.setItem=(key,value)=>{if(key==='atlas-v4-state__trinity_checkpoint_v1'&&!injected){injected=true;write('atlas-v4-state',legacy);}write(key,value);};writer.queue(proposed);writer.flush();assert.equal(s.getItem('atlas-v4-state'),legacy);assert.equal(JSON.parse(writer.copies().checkpointRaw).head,proposed);const reopened=checkpointWriter(s,'atlas-v4-state',()=>{});assert.equal(reopened.resume(),false);assert.equal(reopened.openedRaw(),proposed);assert.equal(reopened.copies().storedRaw,legacy);});
+test('candidate reload and legacy rollback readers retain their own exact records',()=>{const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();const next=JSON.stringify({...newLearningState(),atlasPreferences:{goal:'Build software'}});writer.queue(next);writer.flush();const reopened=checkpointWriter(s,'atlas-v4-state',()=>{});assert.equal(reopened.resume(),true);assert.equal(reopened.openedRaw(),next);assert.equal(s.getItem('atlas-v4-state'),original);assert.equal(JSON.parse(reopened.copies().originalRaw)[0].raw,original);});
+
+test('reviewed import preserves a queued current draft before replacement instead of clearing the autosave head',()=>{
+ const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();
+ const current=JSON.stringify({...newLearningState(),migration:{from:'5.0',notes:['Unsubmitted current work']}}),incoming=JSON.stringify({...newLearningState(),route:'builder'});
+ writer.queue(current);writer.approveReplacement(original);assert.equal(writer.openedRaw(),current);assert.equal(writer.queuedRaw(),null);
+ writer.queue(incoming);assert.equal(writer.flush(),true);assert.equal(writer.openedRaw(),incoming);
+ assert.ok(JSON.parse(writer.copies().originalRaw).some(row=>row.raw===current));assert.equal(s.getItem('atlas-v4-state'),original);
+});
+
+test('explicit recovery from unreadable legacy bytes also preserves the queued current view',()=>{
+ const original='{exact unreadable legacy',s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});assert.equal(writer.resume(),false);
+ const current=JSON.stringify(newLearningState());writer.queue(current);writer.approveReplacement(original);
+ assert.equal(writer.openedRaw(),current);assert.ok(JSON.parse(writer.copies().originalRaw).some(row=>row.raw===original));assert.equal(s.getItem('atlas-v4-state'),original);
+});
+
+test('failed preservation keeps the exact queued proposal and refuses approval without apparent success',()=>{
+ const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();
+ const current=JSON.stringify({...newLearningState(),route:'builder'});writer.queue(current);const write=s.setItem;
+ s.setItem=(key,value)=>{if(key==='atlas-v4-state__trinity_checkpoint_v1')throw Error('Synthetic quota during preservation');write(key,value);};
+ assert.throws(()=>writer.approveReplacement(original),/could not be preserved/);assert.equal(writer.queuedRaw(),current);assert.equal(writer.copies().queuedRaw,current);assert.equal(writer.isPaused(),true);assert.equal(writer.flush(),false);assert.equal(writer.openedRaw(),original);assert.equal(s.getItem('atlas-v4-state'),original);
+});
+
+test('a changed legacy copy refuses preservation before recovery archive writes and retains queued work',()=>{
+ const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();
+ const current=JSON.stringify({...newLearningState(),route:'builder'});writer.queue(current);const changed=JSON.stringify({...newLearningState(),route:'advanced'});s.setItem('atlas-v4-state',changed);
+ assert.throws(()=>writer.approveReplacement(original),/Another tab/);assert.equal(writer.queuedRaw(),current);assert.equal(s.getItem('atlas-v4-state__trinity_original_v1'),null);assert.equal(s.getItem('atlas-v4-state'),changed);
+});
+
+test('an incoming commit failure keeps the preserved current head and failed incoming proposal separately recoverable',()=>{
+ const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();
+ const current=JSON.stringify({...newLearningState(),route:'builder'}),incoming=JSON.stringify({...newLearningState(),route:'advanced'});writer.queue(current);writer.approveReplacement(original);
+ const write=s.setItem;s.setItem=(key,value)=>{if(key==='atlas-v4-state__trinity_checkpoint_v1')throw Error('Synthetic incoming quota');write(key,value);};
+ writer.queue(incoming);assert.equal(writer.flush(),false);assert.equal(writer.openedRaw(),current);assert.equal(writer.queuedRaw(),incoming);assert.equal(JSON.parse(s.getItem('atlas-v4-state__trinity_checkpoint_v1')).head,current);assert.ok(JSON.parse(writer.copies().originalRaw).some(row=>row.raw===current));assert.equal(s.getItem('atlas-v4-state'),original);
+});
+
+test('a full five-copy recovery archive refuses pending preservation without eviction or clearing the queue',()=>{
+ const original=JSON.stringify(newLearningState()),s=disk(original),writer=checkpointWriter(s,'atlas-v4-state',()=>{});writer.resume();
+ const records=Array.from({length:5},(_,index)=>({sourceKey:'atlas-v4-state',raw:'saved-'+index,at:'2026-10-25T00:00:00Z'})),archive=JSON.stringify(records);s.setItem('atlas-v4-state__trinity_original_v1',archive);
+ const current=JSON.stringify({...newLearningState(),route:'builder'});writer.queue(current);assert.throws(()=>writer.approveReplacement(original),/Five original recovery copies/);assert.equal(writer.queuedRaw(),current);assert.equal(s.getItem('atlas-v4-state__trinity_original_v1'),archive);assert.equal(s.getItem('atlas-v4-state'),original);
+});

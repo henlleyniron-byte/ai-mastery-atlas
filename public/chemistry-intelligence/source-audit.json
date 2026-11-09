@@ -1,0 +1,596 @@
+{
+  "title": "Chemistry Intelligence source layer",
+  "scope": "2025 MCQ concept/similarity mapping against 2011–2024 benchmark evidence; syllabus context from Performance Powerhouse V5",
+  "retrieved": "2026-09-29",
+  "unit_allocations": [
+    {
+      "unit": 1,
+      "name": "Atomic Structure",
+      "periods": 35
+    },
+    {
+      "unit": 2,
+      "name": "Structure & Bonding",
+      "periods": 35
+    },
+    {
+      "unit": 3,
+      "name": "Chemical Calculations",
+      "periods": 37
+    },
+    {
+      "unit": 4,
+      "name": "Gaseous State of Matter",
+      "periods": 32
+    },
+    {
+      "unit": 5,
+      "name": "Energetics",
+      "periods": 41
+    },
+    {
+      "unit": 6,
+      "name": "Chemistry of s, p and d Block Elements",
+      "periods": 64
+    },
+    {
+      "unit": 7,
+      "name": "Basic Concepts of Organic Chemistry",
+      "periods": 17
+    },
+    {
+      "unit": 8,
+      "name": "Hydrocarbons & Halo-hydrocarbons",
+      "periods": 46
+    },
+    {
+      "unit": 9,
+      "name": "Oxygen-containing Organic Compounds",
+      "periods": 46
+    },
+    {
+      "unit": 10,
+      "name": "Nitrogen-containing Organic Compounds",
+      "periods": 14
+    },
+    {
+      "unit": 11,
+      "name": "Chemical Kinetics",
+      "periods": 41
+    },
+    {
+      "unit": 12,
+      "name": "Equilibrium",
+      "periods": 94
+    },
+    {
+      "unit": 13,
+      "name": "Electrochemistry",
+      "periods": 33
+    },
+    {
+      "unit": 14,
+      "name": "Industrial Chemistry & Environmental Pollution",
+      "periods": 65
+    }
+  ],
+  "questions": [
+    {
+      "q": 1,
+      "concept": "Becquerel and the discovery of radioactivity",
+      "unit": 1,
+      "similarity": "D",
+      "prior_refs": [
+        "2020 Q01 [D]",
+        "2014 Q01 [C]"
+      ]
+    },
+    {
+      "q": 2,
+      "concept": "Maximum electrons in a subshell; quantum-number reasoning",
+      "unit": 1,
+      "similarity": "D",
+      "prior_refs": [
+        "2014 Q04 [D]",
+        "2024 Q03 [S]"
+      ]
+    },
+    {
+      "q": 3,
+      "concept": "Identify types of intermolecular attraction",
+      "unit": 2,
+      "similarity": "C",
+      "prior_refs": [
+        "2013 Q45 [C]",
+        "2015 Q05 [C]"
+      ]
+    },
+    {
+      "q": 4,
+      "concept": "Substituent effects and electronegativity of carbon",
+      "unit": 7,
+      "similarity": "D",
+      "prior_refs": [
+        "2022 Q09 [D]",
+        "2023 Q08 [D]"
+      ]
+    },
+    {
+      "q": 5,
+      "concept": "Kp, conversion and equilibrium partial pressures",
+      "unit": 12,
+      "similarity": "S",
+      "prior_refs": [
+        "2022 Q14 [S]",
+        "2011 Q22 [S]"
+      ]
+    },
+    {
+      "q": 6,
+      "concept": "Infer proton, neutron, electron and mass-number relations from a table",
+      "unit": 1,
+      "similarity": "N",
+      "prior_refs": []
+    },
+    {
+      "q": 7,
+      "concept": "IUPAC naming of a multifunctional organic compound",
+      "unit": 7,
+      "similarity": "D",
+      "prior_refs": [
+        "2022 Q05 [D]",
+        "2017 Q03 [S]"
+      ]
+    },
+    {
+      "q": 8,
+      "concept": "Thermal decomposition of a carbonate mixture and CO₂ stoichiometry",
+      "unit": 3,
+      "similarity": "S",
+      "prior_refs": [
+        "2015 Q06 [S]",
+        "2012 Q08 [S]"
+      ]
+    },
+    {
+      "q": 9,
+      "concept": "Free-radical chlorination of methane",
+      "unit": 8,
+      "similarity": "D",
+      "prior_refs": [
+        "2021 Q20 [D]",
+        "2023 Q09 [D]",
+        "2013 Q24 [D]"
+      ]
+    },
+    {
+      "q": 10,
+      "concept": "Zero-order concentration–time behaviour",
+      "unit": 11,
+      "similarity": "S",
+      "prior_refs": [
+        "2017 Q17 [S]"
+      ]
+    },
+    {
+      "q": 11,
+      "concept": "VSEPR molecular-shape reasoning",
+      "unit": 2,
+      "similarity": "S",
+      "prior_refs": [
+        "2017 Q02 [S]",
+        "2024 Q07 [C]"
+      ]
+    },
+    {
+      "q": 12,
+      "concept": "Iodometric titration and thiosulfate calculation",
+      "unit": 3,
+      "similarity": "S",
+      "prior_refs": [
+        "2017 Q19 [S]",
+        "2019 Q25 [S]"
+      ]
+    },
+    {
+      "q": 13,
+      "concept": "Solution enthalpy and final-temperature calorimetry",
+      "unit": 5,
+      "similarity": "C",
+      "prior_refs": [
+        "2016 Q23 [C]"
+      ]
+    },
+    {
+      "q": 14,
+      "concept": "Acid–base titration curve and indicator selection",
+      "unit": 12,
+      "similarity": "D",
+      "prior_refs": [
+        "2022 Q15 [D]",
+        "2023 Q12 [D]",
+        "2024 Q13 [S]"
+      ]
+    },
+    {
+      "q": 15,
+      "concept": "Reaction routes to prepare 1,2-dibromopropane",
+      "unit": 8,
+      "similarity": "N",
+      "prior_refs": []
+    },
+    {
+      "q": 16,
+      "concept": "Derive a rate law from a pre-equilibrium mechanism",
+      "unit": 11,
+      "similarity": "S",
+      "prior_refs": [
+        "2024 Q22 [S]",
+        "2023 Q10 [S]"
+      ]
+    },
+    {
+      "q": 17,
+      "concept": "AgBr/AgI solubility products and precipitation displacement",
+      "unit": 12,
+      "similarity": "D",
+      "prior_refs": [
+        "2018 Q07 [D]",
+        "2020 Q10 [C]"
+      ]
+    },
+    {
+      "q": 18,
+      "concept": "Signs of ΔH, ΔS and ΔG for spontaneous vaporisation",
+      "unit": 5,
+      "similarity": "S",
+      "prior_refs": [
+        "2020 Q17 [S]",
+        "2017 Q13 [S]",
+        "2024 Q18 [S]"
+      ]
+    },
+    {
+      "q": 19,
+      "concept": "Properties of d-block elements",
+      "unit": 6,
+      "similarity": "D",
+      "prior_refs": [
+        "2014 Q12 [D]",
+        "2017 Q22 [D]",
+        "2022 Q34 [S]"
+      ]
+    },
+    {
+      "q": 20,
+      "concept": "Selective oxidation of alcohol groups with PCC",
+      "unit": 9,
+      "similarity": "S",
+      "prior_refs": [
+        "2019 Q40 [S]"
+      ]
+    },
+    {
+      "q": 21,
+      "concept": "Use ΔS = ΔH/T for a phase transition",
+      "unit": 5,
+      "similarity": "D",
+      "prior_refs": [
+        "2015 Q14 [D]",
+        "2019 Q16 [D]"
+      ]
+    },
+    {
+      "q": 22,
+      "concept": "Ni/Cu galvanic cell: EMF, polarity and electron flow",
+      "unit": 13,
+      "similarity": "D",
+      "prior_refs": [
+        "2017 Q18 [D]",
+        "2024 Q25 [S]"
+      ]
+    },
+    {
+      "q": 23,
+      "concept": "Diazonium ion as an electrophile in azo coupling",
+      "unit": 10,
+      "similarity": "D",
+      "prior_refs": [
+        "2021 Q48 [D]",
+        "2023 Q45 [D]",
+        "2014 Q48 [S]"
+      ]
+    },
+    {
+      "q": 24,
+      "concept": "Boiling condition: vapour pressure versus external pressure",
+      "unit": 4,
+      "similarity": "D",
+      "prior_refs": [
+        "2023 Q33 [D]",
+        "2020 Q43 [S]"
+      ]
+    },
+    {
+      "q": 25,
+      "concept": "Build the overall cell reaction and E° from half-reactions",
+      "unit": 13,
+      "similarity": "S",
+      "prior_refs": [
+        "2022 Q28 [S]",
+        "2024 Q25 [S]"
+      ]
+    },
+    {
+      "q": 26,
+      "concept": "Determine a spontaneous redox reaction from reduction potentials",
+      "unit": 13,
+      "similarity": "S",
+      "prior_refs": [
+        "2013 Q31 [S]",
+        "2023 Q46 [S]"
+      ]
+    },
+    {
+      "q": 27,
+      "concept": "Identify C₄H₈O₂ isomers using qualitative organic tests",
+      "unit": 9,
+      "similarity": "D",
+      "prior_refs": [
+        "2023 Q13 [D]",
+        "2022 Q10 [D]",
+        "2019 Q20 [S]"
+      ]
+    },
+    {
+      "q": 28,
+      "concept": "Calculate percentage yield from stoichiometry",
+      "unit": 3,
+      "similarity": "D",
+      "prior_refs": [
+        "2020 Q14 [D]",
+        "2019 Q08 [S]"
+      ]
+    },
+    {
+      "q": 29,
+      "concept": "Obtain Kp from conversion in a heterogeneous gas equilibrium",
+      "unit": 12,
+      "similarity": "S",
+      "prior_refs": [
+        "2022 Q14 [S]",
+        "2011 Q22 [S]"
+      ]
+    },
+    {
+      "q": 30,
+      "concept": "Forward and reverse rates after adding reactant to an equilibrium",
+      "unit": 12,
+      "similarity": "C",
+      "prior_refs": [
+        "2021 Q44 [C]",
+        "2018 Q43 [C]"
+      ]
+    },
+    {
+      "q": 31,
+      "concept": "Sigma-complex resonance in bromobenzene nitration",
+      "unit": 8,
+      "similarity": "D",
+      "prior_refs": [
+        "2020 Q16 [D]",
+        "2024 Q14 [S]",
+        "2022 Q32 [S]"
+      ]
+    },
+    {
+      "q": 32,
+      "concept": "Effect of temperature and concentration on an exothermic equilibrium",
+      "unit": 12,
+      "similarity": "D",
+      "prior_refs": [
+        "2014 Q34 [D]",
+        "2017 Q10 [S]",
+        "2024 Q26 [S]"
+      ]
+    },
+    {
+      "q": 33,
+      "concept": "Mixed statements about industrial chemical processes",
+      "unit": 14,
+      "similarity": "S",
+      "prior_refs": [
+        "2021 Q40 [S]",
+        "2020 Q40 [S]",
+        "2017 Q33 [S]"
+      ]
+    },
+    {
+      "q": 34,
+      "concept": "Periodic properties of s-block elements",
+      "unit": 6,
+      "similarity": "D",
+      "prior_refs": [
+        "2013 Q26 [D]",
+        "2012 Q27 [D]",
+        "2011 Q27 [D]"
+      ]
+    },
+    {
+      "q": 35,
+      "concept": "Amide hydrolysis, oxidation and the 2,4-DNP test",
+      "unit": 10,
+      "similarity": "D",
+      "prior_refs": [
+        "2016 Q39 [D]",
+        "2014 Q39 [S]"
+      ]
+    },
+    {
+      "q": 36,
+      "concept": "Read a P–T phase diagram with a negative fusion-curve slope",
+      "unit": 4,
+      "similarity": "D",
+      "prior_refs": [
+        "2024 Q35 [D]",
+        "2021 Q28 [C]"
+      ]
+    },
+    {
+      "q": 37,
+      "concept": "Atmospheric ozone: location, function and formation",
+      "unit": 14,
+      "similarity": "D",
+      "prior_refs": [
+        "2024 Q37 [D]",
+        "2022 Q37 [D]",
+        "2021 Q50 [S]"
+      ]
+    },
+    {
+      "q": 38,
+      "concept": "Scale ΔH using stoichiometric coefficients",
+      "unit": 5,
+      "similarity": "D",
+      "prior_refs": [
+        "2016 Q37 [D]",
+        "2022 Q18 [S]"
+      ]
+    },
+    {
+      "q": 39,
+      "concept": "Hydrogen halides: acidity, bond strength and bond length",
+      "unit": 6,
+      "similarity": "D",
+      "prior_refs": [
+        "2022 Q16 [D]",
+        "2020 Q37 [D]",
+        "2018 Q36 [S]"
+      ]
+    },
+    {
+      "q": 40,
+      "concept": "Contact process conditions for SO₂ → SO₃",
+      "unit": 14,
+      "similarity": "D",
+      "prior_refs": [
+        "2020 Q47 [D]",
+        "2017 Q33 [D]",
+        "2024 Q40 [S]"
+      ]
+    },
+    {
+      "q": 41,
+      "concept": "Electron affinity of Be and N; subshell stability",
+      "unit": 1,
+      "similarity": "D",
+      "prior_refs": [
+        "2020 Q22 [D]",
+        "2012 Q04 [S]"
+      ]
+    },
+    {
+      "q": 42,
+      "concept": "Ester + Grignard reaction: ketone intermediate",
+      "unit": 9,
+      "similarity": "S",
+      "prior_refs": [
+        "2016 Q25 [S]",
+        "2017 Q42 [C]"
+      ]
+    },
+    {
+      "q": 43,
+      "concept": "Boiling point of water under lower external pressure",
+      "unit": 4,
+      "similarity": "D",
+      "prior_refs": [
+        "2023 Q33 [D]",
+        "2020 Q43 [S]"
+      ]
+    },
+    {
+      "q": 44,
+      "concept": "Bond-angle trend in H₂O, H₂S and H₂Se",
+      "unit": 2,
+      "similarity": "C",
+      "prior_refs": [
+        "2017 Q11 [C]"
+      ]
+    },
+    {
+      "q": 45,
+      "concept": "Water vapour as a greenhouse gas",
+      "unit": 14,
+      "similarity": "D",
+      "prior_refs": [
+        "2015 Q50 [D]",
+        "2023 Q37 [S]"
+      ]
+    },
+    {
+      "q": 46,
+      "concept": "Compare ΔHfus and ΔHvap of water",
+      "unit": 5,
+      "similarity": "D",
+      "prior_refs": [
+        "2024 Q17 [D]",
+        "2015 Q23 [S]"
+      ]
+    },
+    {
+      "q": 47,
+      "concept": "Basic hydrolysis of an acyl chloride and the tetrahedral intermediate",
+      "unit": 9,
+      "similarity": "C",
+      "prior_refs": [
+        "2011 Q17 [C]",
+        "2021 Q30 [C]"
+      ]
+    },
+    {
+      "q": 48,
+      "concept": "Effect of pH on Cu(OH)₂ solubility",
+      "unit": 12,
+      "similarity": "D",
+      "prior_refs": [
+        "2023 Q38 [D]",
+        "2017 Q49 [S]",
+        "2014 Q15 [C]"
+      ]
+    },
+    {
+      "q": 49,
+      "concept": "Solvay process: ammoniation and carbonation stages",
+      "unit": 14,
+      "similarity": "D",
+      "prior_refs": [
+        "2018 Q33 [D]",
+        "2016 Q33 [D]",
+        "2021 Q47 [D]"
+      ]
+    },
+    {
+      "q": 50,
+      "concept": "H₂O₂ acting as both oxidising and reducing agent",
+      "unit": 6,
+      "similarity": "D",
+      "prior_refs": [
+        "2021 Q41 [D]",
+        "2014 Q47 [D]",
+        "2019 Q31 [S]"
+      ]
+    }
+  ],
+  "classification_counts": {
+    "D": 30,
+    "C": 5,
+    "S": 13,
+    "N": 2
+  },
+  "notes": [
+    "D/S/C/N labels reproduce the benchmark site’s similarity framework.",
+    "Unit assignment is a Performance Powerhouse companion mapping derived from each 2025 question concept; it is not an official Department of Examinations classification.",
+    "No future-paper probability is inferred."
+  ]
+}

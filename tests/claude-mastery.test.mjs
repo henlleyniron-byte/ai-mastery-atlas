@@ -22,7 +22,7 @@ test("Sparring Arena holds task and rubric constant across all three systems", (
 });
 
 test("Claude sources are versioned and the unreviewed playlist cannot masquerade as canonical", () => {
-  assert.match(component, /verified 8 September 2026/);
+  assert.match(component, /model register · checked 6 October 2026/);
   assert.match(page, /r129.*Claude models overview/);
   assert.match(page, /r138.*Review needed.*D · Discovery \/ unverified.*User-supplied.*Historical \/ version-specific/);
 });

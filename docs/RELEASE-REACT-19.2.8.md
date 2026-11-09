@@ -1,0 +1,7 @@
+# React family maintenance candidate
+
+Continue published V20 with exact worksheet formats, retained copies, source hints, private/shared controls and held classifications intact. Synchronize exact react, react-dom and react-server-dom-webpack versions from19.2.6 to19.2.8. Change only their three lock package records and the root declaration record. Next16.4.0, Vinext0.0.50, Vite8.0.13 and plugin-rsc0.5.26 stay fixed. Atlas has an independent fresh installation; no runtime or data dependency on Powerhouse/CommandCentre is added.
+
+The [upstream RSC advisory](https://github.com/advisories/GHSA-wx67-qw84-cm4g) marks19.2.8 patched for its stated denial-of-service range. Prior bundled server.edge decoder19.2.6 and Vinext progressive-form decoding prevent dismissing the dependency as development-only or automatically unreachable. Package mitigation is distinct from proving exploitability or removing other advisories.
+
+Before publication require fresh installation without prior junctions, exact lock/package review, Worker/SSR decoder attribution, full tests/types/lint/build and actual synthetic private/shared/legacy/recovery browser flows. No forced peer resolution, test weakening, raw student data, production attack tests, automatic answers/mastery or corpus promotion. The2019 Biology NEW revision caveat and Q42 hold remain. Fresh independent receipts must establish actual publication; this source note claims none.

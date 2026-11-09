@@ -1,15 +1,18 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test, { after } from "node:test";
 import { fileURLToPath } from "node:url";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { createServer } from "vite";
+import { windowsNativeDependencies } from "./windows-native-deps.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const vite = await createServer({
   appType: "custom",
   configFile: false,
+  plugins: [windowsNativeDependencies()],
   root,
   resolve: { alias: { "@": root } },
   optimizeDeps: { noDiscovery: true, include: [] },
@@ -19,9 +22,46 @@ const vite = await createServer({
 after(async () => vite.close());
 
 const page = await vite.ssrLoadModule("/app/page.tsx");
-const { tracks, resources, runtimeCurriculum, runtimeUnitDetails, ExternalResourceLink, buildLearningQueue, calculateProgressHours, migrateLegacyStatuses, sanitizeProgressRecords, validateStatusTransition } = page;
+const { tracks, resources, runtimeCurriculum, runtimeUnitDetails, ExternalResourceLink, buildLearningQueue, calculateProgressHours, migrateLegacyStatuses, sanitizeProgressRecords, validateStatusTransition, matchesTrackProgressFilter } = page;
 const { routeOperatorTask } = await vite.ssrLoadModule("/lib/operator-core.ts");
 const { competencyGraphIntegrity, competencyCoverage, resolveCompetencyGraph } = await vite.ssrLoadModule("/lib/competency-graph.ts");
+
+test("current guide renders dated official evidence and separates API and ChatGPT lifecycles", async () => {
+  const { CurrentGuide } = await vite.ssrLoadModule("/components/current-guide.tsx");
+  const { currentChanges, currentSourceRegister } = await vite.ssrLoadModule("/lib/current-guidance.ts");
+  const html = renderToStaticMarkup(createElement(CurrentGuide));
+  assert.match(html, /6 October 2026/);
+  assert.match(html, /does not refresh the news automatically/);
+  assert.match(html, /14 October 2026/);
+  assert.match(html, /retired from Codex for users signed in with ChatGPT/);
+  assert.match(html, /API-key-authenticated Codex sessions are not affected/);
+  assert.match(html, /16 October 2026/);
+  assert.doesNotMatch(html, /retirement is scheduled for/);
+  assert.match(html, /1 April 2027/);
+  assert.match(html, /role="tablist"/);
+  assert.match(html, /Gemini 4 Argon in the Gemini app/);
+  assert.match(html, /Google AI Pro and Ultra/);
+  assert.match(html, /Claude Fable 5\.2 released/);
+  assert.equal(resources.find(item => item.id === "r159").creator, "Google");
+  for (const item of currentChanges) assert.ok(html.includes(item.source), `missing update source ${item.id}`);
+  for (const item of currentSourceRegister) assert.ok(tracks.some(track => track.modules.some(module => module.resourceIds.includes(item.id))), `new source ${item.id} is not used in the curriculum`);
+});
+
+test("shows the flagship release in the navigation and workbar", async () => {
+  const source = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /<Badge variant="outline">Flagship<\/Badge>/);
+  assert.match(source, /data-edition=\{flagshipRelease\}/);
+});
+
+test("Active learning includes repair and due-retest work but excludes unseen or deferred tracks", () => {
+  for (const status of ["Learned", "Practised", "Demonstrated", "Transferred", "Needs Repair", "Retest Due"]) {
+    assert.equal(matchesTrackProgressFilter("Active", status), true, `${status} should remain visible as active work`);
+  }
+  for (const status of ["Unseen", "Mastered", "Later", "Skipped with reason"]) {
+    assert.equal(matchesTrackProgressFilter("Active", status), false, `${status} should not appear as active work`);
+  }
+  assert.equal(matchesTrackProgressFilter("Needs Repair", "Needs Repair"), true);
+});
 
 test("derives the 500-hour runtime curriculum counts from real data", () => {
   const byRoute = Object.fromEntries(["Essential", "Builder", "Advanced"].map((route) => [
@@ -128,7 +168,7 @@ test("all 43 track labs assemble their protocol from authored lesson evidence in
 });
 
 test("resource register is unique, classified, dated and fully integrated; freshness requires a live audit", () => {
-  assert.equal(resources.length, 150);
+  assert.equal(resources.length, 160);
   assert.equal(new Set(resources.map((item) => item.id)).size, resources.length);
   assert.equal(new Set(resources.map((item) => item.url)).size, resources.length);
 
@@ -138,7 +178,7 @@ test("resource register is unique, classified, dated and fully integrated; fresh
     resources.filter((item) => item.format === format).length,
   ]));
 
-  assert.deepEqual(formats, { Course: 36, Video: 38, "Official docs": 65, Standard: 8, Reference: 3 });
+  assert.deepEqual(formats, { Course: 36, Video: 38, "Official docs": 75, Standard: 8, Reference: 3 });
   assert.equal(resources.filter((item) => item.url.includes("youtube.com/")).length, 37);
 
   assert.deepEqual(resources.filter(item => !moduleResourceIds.has(item.id)).map(item => item.id), [], "resources missing explicit lesson placement");
@@ -146,7 +186,7 @@ test("resource register is unique, classified, dated and fully integrated; fresh
     assert.match(item.url, /^https:\/\//, `${item.id} is not HTTPS`);
     assert.doesNotMatch(item.url, /[?&](utm_|fbclid|gclid)/i, `${item.id} contains tracking parameters`);
     assert.ok(["Active", "Rolling out", "Changing", "Review needed"].includes(item.status), `${item.id} has an invalid publication status`);
-    const expectedDate = ["r149", "r150"].includes(item.id) ? "2026-09-13" : item.id.match(/^r1(?:3[0-9]|4[0-8])$/) || item.id === "r129" ? "2026-09-08" : item.id === "r128" ? "2026-09-07" : item.id.match(/^r12[4-7]$/) ? "2026-09-06" : item.id.match(/^r12[1-3]$/) ? "2026-09-04" : "2026-09-01";
+    const expectedDate = item.id === "google-genai-foundations" ? "2026-10-24" : ["r11", "r20", "r128", "r129", "r144", ...Array.from({ length: 9 }, (_, index) => `r${151 + index}`)].includes(item.id) ? "2026-10-06" : ["r149", "r150"].includes(item.id) ? "2026-09-13" : item.id.match(/^r1(?:3[0-9]|4[0-8])$/) || item.id === "r129" ? "2026-09-08" : item.id === "r128" ? "2026-09-07" : item.id.match(/^r12[4-7]$/) ? "2026-09-06" : item.id.match(/^r12[1-3]$/) ? "2026-09-04" : "2026-09-01";
     assert.equal(item.lastVerified, expectedDate, `${item.id} lacks the correct audit date`);
     assert.ok(["Fetched", "Search-confirmed", "User-supplied"].includes(item.verification), `${item.id} lacks verification evidence`);
     assert.ok(item.qualityTier && item.versionRelevance, `${item.id} lacks quality/version metadata`);
@@ -160,6 +200,33 @@ test("external resource links announce their new-tab behaviour", () => {
   assert.match(markup, /class="sr-only"> \(opens in a new tab\)<\/span>/);
 });
 
+test("live Google generative-AI foundation remains reachable through the Gemini lesson and renders its official destination", () => {
+  const id = "google-genai-foundations";
+  const gemini = tracks.find(track => track.id === "e4");
+  const lesson = gemini.modules[0];
+  assert.equal(lesson.title, "Gemini fundamentals and multimodal work");
+  assert.ok(lesson.resourceIds.includes(id), "live resource must remain in its original lesson");
+  assert.ok(gemini.resourceIds.includes(id), "the lesson must expose the source in the track resource register");
+  const resolved = lesson.resourceIds.map(resourceId => resources.find(item => item.id === resourceId));
+  assert.ok(resolved.every(Boolean), "every resource offered by the lesson must resolve");
+  const item = resolved.find(resource => resource.id === id);
+  assert.equal(item.title, "Learn about generative AI");
+  assert.equal(item.creator, "Google Gemini Apps Help");
+  assert.equal(item.url, "https://support.google.com/gemini/answer/13954172?hl=en");
+  assert.equal(item.format, "Official docs");
+  assert.equal(item.lastVerified, "2026-10-24");
+  assert.equal(item.status, "Active");
+  assert.equal(item.free, true);
+  assert.equal(item.evergreen, false);
+  assert.match(item.why, /hallucinations, checking factual claims and reviewing generated code/);
+  assert.match(item.why, /their answers still need verification/);
+  const markup = renderToStaticMarkup(createElement(ExternalResourceLink, { href: item.url }, item.title));
+  assert.match(markup, /href="https:\/\/support\.google\.com\/gemini\/answer\/13954172\?hl=en"/);
+  assert.match(markup, /Learn about generative AI/);
+  assert.match(markup, /target="_blank" rel="noreferrer"/);
+  assert.match(markup, /opens in a new tab/);
+});
+
 test("verified product resources sit in their corresponding lessons", () => {
   const idsFor = (trackId, moduleTitle) => tracks.find((track) => track.id === trackId).modules.find((lesson) => lesson.title === moduleTitle).resourceIds;
   assert.ok(["r19", "r20", "r121"].every((id) => idsFor("e3", "Chat, Search, Deep Research, Projects and memory").includes(id)));
@@ -169,7 +236,7 @@ test("verified product resources sit in their corresponding lessons", () => {
   assert.ok(["r61", "r62", "r63"].every((id) => idsFor("b4", "Cursor Agent, Plan and Rules").includes(id)));
   assert.ok(["r64", "r65"].every((id) => idsFor("b4", "Claude Code and terminal-native work").includes(id)));
   assert.ok(["r24", "r26"].every((id) => idsFor("e4", "Notebook-only grounding vs Gemini tools and web").includes(id)));
-  assert.ok(["r139", "r140", "r143"].every((id) => idsFor("e4", "Gemini fundamentals and multimodal work").includes(id)));
+  assert.ok(["r139", "r140", "r143", "google-genai-foundations"].every((id) => idsFor("e4", "Gemini fundamentals and multimodal work").includes(id)));
   assert.ok(["r141", "r142"].every((id) => idsFor("e4", "Gemini research and Google integration").includes(id)));
   assert.ok(["r144", "r145", "r146"].every((id) => idsFor("b3", "Beginner API project and error handling").includes(id)));
   assert.ok(["r147", "r148"].every((id) => idsFor("b4", "Tests, diffs, review and rollback").includes(id)));

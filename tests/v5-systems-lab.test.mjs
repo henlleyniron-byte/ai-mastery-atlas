@@ -26,7 +26,10 @@ test("personal benchmark records are bounded, local and part of the unified expo
 
 test("Failure Atlas teaches the full defensive loop", () => {
   for (const heading of ["Symptom", "Cause", "Detection", "Prevention", "Recovery"]) assert.match(component, new RegExp(`>${heading}<`));
-  for (const failure of ["Hallucination", "Citation fabrication", "Prompt injection", "Automation loop", "State loss", "Duplicate execution"]) assert.match(component, new RegExp(failure));
+  for (const failure of ["Hallucination", "Citation fabrication", "Corrupted tool output", "Prompt injection", "Automation loop", "State loss", "Duplicate execution"]) assert.match(component, new RegExp(failure));
+  assert.match(component, /mandatory same-context reflection/);
+  assert.match(component, /Optional verification was invoked unevenly/);
+  assert.match(component, /https:\/\/arxiv\.org\/abs\/2610\.08097/);
 });
 
 test("economics optimises successful work and declares excluded costs", () => {

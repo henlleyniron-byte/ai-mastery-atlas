@@ -4,7 +4,7 @@ import test from "node:test";
 const developmentPreviewMeta =
   /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
 
-test("renders development preview metadata", async () => {
+test("renders the Flagship Model Lab and preserved beginner academy without development preview metadata", async () => {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
   workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
@@ -29,5 +29,19 @@ test("renders development preview metadata", async () => {
     response.headers.get("content-type") ?? "",
     /^text\/html\b/i,
   );
-  assert.match(await response.text(), developmentPreviewMeta);
+  const html = await response.text();
+  assert.doesNotMatch(html, developmentPreviewMeta);
+  assert.match(html, /AI Mastery Atlas — Flagship Model Lab/);
+  assert.match(html, /id="frontier-update"/);
+  assert.match(html, /Prepare a head-to-head test/);
+  assert.match(html, /claude-fable-5-2/);
+  assert.match(html, /Gemini 4 Carbon/);
+  assert.match(html, /Score completed runs in the Evaluation Workbench/);
+  assert.match(html, /id="evaluation-workbench"/);
+  assert.match(html, /id="learning-science"/);
+  assert.match(html, /id="beginner-academy"/);
+  assert.match(html, /id="v6-models"/);
+  assert.match(html, /id="subject-study-lab"/);
+  assert.match(html, /href="\/chemistry-intelligence\/"/);
+  assert.match(html, /href="\/biology-intelligence\/"/);
 });

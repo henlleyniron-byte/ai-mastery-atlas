@@ -1,16 +1,16 @@
+import { AppearanceControl } from "./appearance-control";
+import { flagshipRelease } from "@/lib/flagship-models";
 import type { Metadata } from "next";
 import "./globals.css";
+import "../public/ui-theme/theme.css";
 
 export const metadata: Metadata = {
-  title: "AI Mastery Atlas v5.1 — Universal AI Systems Mastery",
+  title: `AI Mastery Atlas — ${flagshipRelease}`,
   description:
-    "A model-agnostic, evidence-first curriculum for understanding, evaluating, building, routing and securing modern AI systems.",
+    "A comprehensive AI curriculum with ten guided practical workflows, source checks, reproducible evaluations, independent assessments and exportable working notes.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
-  },
-  other: {
-    "codex-preview": "development",
   },
 };
 
@@ -20,8 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased">{children}</body>
+    <html lang="en" className="dark" data-theme="dark" data-ui-shell="react" data-ui-family="atlas" suppressHydrationWarning>
+      <head><meta name="color-scheme" content="dark light" /><script defer src="/ui-theme/theme.js" /></head>
+      <body className="antialiased">{children}<AppearanceControl /></body>
     </html>
   );
 }

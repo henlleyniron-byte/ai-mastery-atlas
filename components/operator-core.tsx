@@ -57,10 +57,11 @@ function downloadAstraWorksheet() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function OperatorCore({ studio, onStudioChange }: { studio: StudioState; onStudioChange: (state: StudioState) => void }) {
+export function OperatorCore({ studio, onStudioChange,shared=false }: { studio: StudioState; onStudioChange: (state: StudioState) => void;shared?:boolean }) {
   const [signals, setSignals] = useState<TaskSignals>(defaultSignals);
   const [judgeVariant, setJudgeVariant] = useState<keyof typeof judgeVariants>("Compact");
   const recommendation = routeOperatorTask(signals);
+  if(shared)return <section id="operator-core" className="page-section operator-core"><h2>Operator Core — public view</h2><p>Private task signals and Studio fields are hidden. Your in-memory draft is preserved for a private view.</p></section>;
 
   return (
     <section id="operator-core" className="page-section operator-core" aria-labelledby="operator-core-title">

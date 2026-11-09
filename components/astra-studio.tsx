@@ -3,20 +3,24 @@
 import { useRef, useState } from "react";
 import { applyStudioPreset, composeStudioPrompt, newStudioState, steeringExamples, studioFields, studioPresets, studioReadiness, studioRubric, type StudioState } from "@/lib/astra-studio";
 import { localDate } from "@/lib/learning-state";
+import {useLivePrivateView} from "@/components/core-import-guard";
 
 export function AstraStudio({ value, onChange }: { value: StudioState; onChange: (state: StudioState) => void }) {
+  const privateNow=useLivePrivateView();
   const [message, setMessage] = useState("");
   const [steer, setSteer] = useState<keyof typeof steeringExamples>("Add");
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const prompt = composeStudioPrompt(value);
   const readiness = studioReadiness(value);
   const selected = studioPresets.find(preset => preset.id === value.preset) || studioPresets[0];
-  const patch = (changes: Partial<StudioState>) => onChange({ ...value, ...changes });
+  const patch = (changes: Partial<StudioState>) => {if(privateNow())onChange({ ...value, ...changes });};
   const copy = async () => {
+    if(!privateNow())return;
     try { await navigator.clipboard.writeText(prompt); setMessage("Prompt copied. Run it in an authorised interface; this Studio has not executed it."); }
     catch { promptRef.current?.focus(); promptRef.current?.select(); setMessage("Clipboard access was unavailable. The prompt is selected; use your device's Copy command."); }
   };
   const download = () => {
+    if(!privateNow())return;
     const payload = { kind: "atlas-astra-studio", exportedAt: new Date().toISOString(), evidence: "Self-reported; no model execution or artifact inspection occurs in this Studio.", studio: value, prompt };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a"); link.href = url; link.download = "astra-practice-studio.json"; link.click();
@@ -24,7 +28,9 @@ export function AstraStudio({ value, onChange }: { value: StudioState; onChange:
     setMessage("Studio draft and self-reported results exported. The Atlas progress export also includes these notes.");
   };
   const loadPreset = () => {
+    if(!privateNow())return;
     if ((prompt || value.result) && !window.confirm("Replace this Studio draft and its result notes with the selected synthetic example? Export first if you want to keep them.")) return;
+    if(!privateNow())return;
     onChange(applyStudioPreset(value.preset)); setMessage("Synthetic example loaded. Adapt it to your actual task and authority before use.");
   };
 

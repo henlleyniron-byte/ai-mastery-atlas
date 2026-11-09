@@ -2,6 +2,7 @@
 
 import { type Dispatch, type SetStateAction, useMemo } from "react";
 import { ArrowRight, CheckCircle2, ExternalLink, FlaskConical, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { claudeFable, flagshipSources } from "@/lib/flagship-models";
 import type { ClaudeLabState, StageEvidence } from "@/lib/v5-state";
 
 
@@ -24,13 +25,14 @@ const stages = [
 ] as const;
 
 const models = [
-  ["Fable 5.1", "Demanding reasoning and long-horizon agentic work", "Slower · highest listed API cost", "Current"],
-  ["Opus 5", "Complex agentic coding and enterprise work", "Moderate latency · premium cost", "Current"],
-  ["Sonnet 5", "Everyday work where speed and capability must balance", "Fast · cost-efficient", "Current"],
-  ["Haiku 4.5", "High-volume, latency-sensitive or lower-cost work", "Fastest · smallest current context", "Current"],
+  [claudeFable.shortName, "Demanding reasoning and long-horizon agentic work", claudeFable.price, "Current"],
+  ["Opus 5.5", "Complex agentic coding and enterprise work", "Moderate latency · premium cost", "Current"],
+  ["Sonnet 5.5", "Everyday work where speed and capability must balance", "Fast · cost-efficient", "Current"],
+  ["Haiku 5.5", "High-volume, latency-sensitive or lower-cost work", "Fastest in this model family", "Current"],
 ] as const;
 
 const sources = [
+  ["Fable 5.2 launch and access", flagshipSources.fableLaunch, "A · Canonical"],
   ["Models overview", "https://platform.claude.com/docs/en/models/overview", "A · Canonical"],
   ["Claude Code overview", "https://code.claude.com/docs/en/overview", "A · Canonical"],
   ["Claude Code best practices", "https://code.claude.com/docs/en/best-practices", "A · Canonical"],
@@ -50,16 +52,17 @@ const derived = (e: StageEvidence | undefined) => {
   return new Date(`${e.retestDue}T00:00:00`) <= new Date() ? "Retained" : "Transferred";
 };
 
-export function ClaudeMastery({ state, setState }: { state: ClaudeLabState; setState: Dispatch<SetStateAction<ClaudeLabState>> }) {
+export function ClaudeMastery({ state, setState,shared=false }: { state: ClaudeLabState; setState: Dispatch<SetStateAction<ClaudeLabState>>;shared?:boolean }) {
   const updateStage = (id: string, patch: Partial<StageEvidence>) => setState(current => ({ ...current, stages: { ...current.stages, [id]: { ...current.stages[id], ...patch } } }));
   const setArena = (key: string, value: string | number) => setState(current => ({ ...current, arena: { ...current.arena, [key]: value } }));
   const demonstrated = useMemo(() => stages.filter(([id]) => ["Demonstrated", "Transferred", "Retest Due", "Retained"].includes(derived(state.stages[id]))).length, [state.stages]);
   const transferred = useMemo(() => stages.filter(([id]) => ["Transferred", "Retest Due", "Retained"].includes(derived(state.stages[id]))).length, [state.stages]);
   const retained = useMemo(() => stages.filter(([id]) => derived(state.stages[id]) === "Retained").length, [state.stages]);
 
+  if(shared)return <section className="page-section claude-zone"><h2>Claude pathway — public view</h2><p>Private artifacts, comparisons and progress are hidden; existing learner fields are preserved.</p></section>;
   return <section className="page-section claude-zone" aria-labelledby="claude-title">
     <div className="claude-heading"><div><div className="section-kicker">Claude Mastery · first-class pathway</div><h2 id="claude-title" className="section-title">Operate the ecosystem. Prove the capability.</h2><p className="section-intro">Fifteen stages thread through the Atlas’s existing 500 hours; they do not add double-counted time. A stage advances only from an artifact, a materially different transfer, and a due delayed retest.</p></div><div className="claude-passport" aria-label="Claude capability passport"><span>Capability passport</span><strong>{demonstrated}/15 demonstrated</strong><small>{transferred} transferred · {retained} retained</small><div className="passport-meter"><i style={{ width: `${Math.round(retained / stages.length * 100)}%` }} /></div><small>Percentage reflects retained evidence only—not videos, clicks or time.</small></div></div>
-    <div className="model-router"><div><span>Current model router</span><small>Official Anthropic model register · verified 8 September 2026</small></div>{models.map(([name, fit, tradeoff, status]) => <article key={name}><div><h3>{name}</h3><b>{status}</b></div><p>{fit}</p><small>{tradeoff}</small></article>)}</div>
+    <div className="model-router"><div><span>Current model router</span><small>Official Anthropic model register · checked 6 October 2026</small></div>{models.map(([name, fit, tradeoff, status]) => <article key={name}><div><h3>{name}</h3><b>{status}</b></div><p>{fit}</p><small>{tradeoff}</small></article>)}</div>
     <p className="volatile-note"><ShieldCheck /> Model names, pricing, availability and limits are volatile. Re-open the official model page before a consequential choice; never default to the largest model without task evidence.</p>
     <div className="claude-stage-grid">{stages.map(([id, title, objective, evidence]) => { const item = state.stages[id] || {}; const status = derived(item); return <details className="claude-stage" key={id}><summary><span>{id}</span><div><strong>{title}</strong><small>{status}</small></div><ArrowRight /></summary><div className="claude-stage-body"><p>{objective}</p><p><b>Pass evidence:</b> {evidence}</p><label>Artifact / result reference<textarea value={item.artifact || ""} onChange={event => updateStage(id, { artifact: event.target.value })} placeholder="What inspectable result met the pass condition?" /></label><label>Novel transfer evidence<textarea value={item.transfer || ""} onChange={event => updateStage(id, { transfer: event.target.value })} placeholder="What materially changed, and what still worked?" /></label><div className="retest-row"><label>Retest due<input type="date" value={item.retestDue || ""} onChange={event => updateStage(id, { retestDue: event.target.value })} /></label><label>Retest result<input value={item.retest || ""} onChange={event => updateStage(id, { retest: event.target.value })} placeholder="Fresh task and observed result" /></label></div></div></details>; })}</div>
     <div className="claude-labs"><article><FlaskConical /><h3>Project Architect Lab</h3><p>Configure a Claude Project from messy files, examples and constraints. Another learner must reproduce the intended output without private coaching.</p><b>Evidence: exported instructions, source inventory, reproduction notes and failure repair.</b></article><article><FlaskConical /><h3>Autonomous Repair Lab</h3><p>Inspect a broken repository, freeze acceptance criteria, plan, repair, test, review the diff and document what required human correction.</p><b>Evidence: commit/diff, test output, decision log, transfer repository and delayed retest.</b></article><article><FlaskConical /><h3>Scientific Explanation Skill</h3><p>Create a focused <code>SKILL.md</code> with optional references/scripts for precise explanations, misconceptions, MCQs, marking guidance and transfer questions.</p><b>Score: reusability, reliability, clarity, portability and failure handling.</b></article><article><FlaskConical /><h3>Builder Capstone</h3><p>Build one bounded Claude-powered workflow with typed inputs, structured outputs, tool limits, fixtures, evaluation evidence and a human escalation path.</p><b>Ordinary operators may skip this builder lane without losing operator mastery.</b></article></div>

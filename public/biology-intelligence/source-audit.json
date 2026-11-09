@@ -1,0 +1,475 @@
+{
+  "title": "Biology Intelligence source layer",
+  "scope": "2019–2025 verified essay/sub-question records and MCQ→essay link audit; 2019–2026 MCQ topic map as exposed by the benchmark site; syllabus context from Performance Powerhouse V5",
+  "retrieved": "2026-09-29",
+  "unit_allocations": [
+    {
+      "unit": 1,
+      "name": "Introduction to Biology",
+      "periods": 5
+    },
+    {
+      "unit": 2,
+      "name": "Chemical & Cellular Basis of Life",
+      "periods": 85
+    },
+    {
+      "unit": 3,
+      "name": "Evolution & Diversity of Organisms",
+      "periods": 61
+    },
+    {
+      "unit": 4,
+      "name": "Plant Form & Function",
+      "periods": 80
+    },
+    {
+      "unit": 5,
+      "name": "Animal Form & Function",
+      "periods": 193
+    },
+    {
+      "unit": 6,
+      "name": "Genetics",
+      "periods": 22
+    },
+    {
+      "unit": 7,
+      "name": "Molecular Biology & Recombinant DNA Technology",
+      "periods": 42
+    },
+    {
+      "unit": 8,
+      "name": "Environmental Biology",
+      "periods": 41
+    },
+    {
+      "unit": 9,
+      "name": "Microbiology",
+      "periods": 50
+    },
+    {
+      "unit": 10,
+      "name": "Applied Biology",
+      "periods": 24
+    }
+  ],
+  "year_pairs": [
+    {
+      "year": 2019,
+      "essay_records": 14,
+      "same_year_exact": 6,
+      "previous_year_exact": null,
+      "direct": 6,
+      "complementary": 7,
+      "conceptual_foreshadowing": 0,
+      "same_unit": 1,
+      "no_link": 0
+    },
+    {
+      "year": 2020,
+      "essay_records": 12,
+      "same_year_exact": 2,
+      "previous_year_exact": 10,
+      "direct": 2,
+      "complementary": 8,
+      "conceptual_foreshadowing": 1,
+      "same_unit": 0,
+      "no_link": 1
+    },
+    {
+      "year": 2021,
+      "essay_records": 11,
+      "same_year_exact": 6,
+      "previous_year_exact": 7,
+      "direct": 6,
+      "complementary": 4,
+      "conceptual_foreshadowing": 0,
+      "same_unit": 1,
+      "no_link": 0
+    },
+    {
+      "year": 2022,
+      "essay_records": 11,
+      "same_year_exact": 4,
+      "previous_year_exact": 6,
+      "direct": 4,
+      "complementary": 5,
+      "conceptual_foreshadowing": 2,
+      "same_unit": 0,
+      "no_link": 0
+    },
+    {
+      "year": 2023,
+      "essay_records": 13,
+      "same_year_exact": 7,
+      "previous_year_exact": 8,
+      "direct": 7,
+      "complementary": 6,
+      "conceptual_foreshadowing": 0,
+      "same_unit": 0,
+      "no_link": 0
+    },
+    {
+      "year": 2024,
+      "essay_records": 12,
+      "same_year_exact": 6,
+      "previous_year_exact": 9,
+      "direct": 6,
+      "complementary": 6,
+      "conceptual_foreshadowing": 0,
+      "same_unit": 0,
+      "no_link": 0
+    },
+    {
+      "year": 2025,
+      "essay_records": 13,
+      "same_year_exact": 3,
+      "previous_year_exact": 6,
+      "direct": 3,
+      "complementary": 9,
+      "conceptual_foreshadowing": 0,
+      "same_unit": 1,
+      "no_link": 0
+    }
+  ],
+  "revision_bank": [
+    {
+      "id": 1,
+      "topic": "Mechanism of skeletal-muscle contraction",
+      "unit": 5,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 2,
+      "topic": "DNA replication",
+      "unit": 7,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 3,
+      "topic": "RNA types and protein synthesis",
+      "unit": 7,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 4,
+      "topic": "Cell cycle and cancer cells",
+      "unit": 6,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 5,
+      "topic": "Origin of life and chemical evolution",
+      "unit": 3,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 6,
+      "topic": "Comparison of C3 and C4 photosynthesis",
+      "unit": 4,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 7,
+      "topic": "Water potential and cohesion–tension theory",
+      "unit": 4,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 8,
+      "topic": "Root nodules and nitrogen fixation",
+      "unit": 4,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 9,
+      "topic": "Plant growth substances and agricultural applications",
+      "unit": 4,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 10,
+      "topic": "Human small intestine: histology and absorption",
+      "unit": 5,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 11,
+      "topic": "Cardiac cycle and ECG",
+      "unit": 5,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 12,
+      "topic": "Structure of the ear and body balance",
+      "unit": 5,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 13,
+      "topic": "Animal excretory structures and nitrogenous wastes",
+      "unit": 5,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 14,
+      "topic": "Non-Mendelian inheritance",
+      "unit": 6,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 15,
+      "topic": "Sex-linked inheritance and pedigrees",
+      "unit": 6,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 16,
+      "topic": "Recombinant-DNA technology and enzymes",
+      "unit": 7,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 17,
+      "topic": "Gene mutations and human genetic disorders",
+      "unit": 6,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 18,
+      "topic": "Threats to biodiversity and conservation",
+      "unit": 8,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 19,
+      "topic": "Soil microorganisms and the nitrogen cycle",
+      "unit": 9,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 20,
+      "topic": "Food spoilage and preservation principles",
+      "unit": 10,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 21,
+      "topic": "Cellular respiration and fermentation",
+      "unit": 2,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 22,
+      "topic": "Protein structure and importance",
+      "unit": 2,
+      "benchmark_band": "A"
+    },
+    {
+      "id": 23,
+      "topic": "Properties of water",
+      "unit": 2,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 24,
+      "topic": "Carbohydrates and lipids",
+      "unit": 2,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 25,
+      "topic": "Diversity of Kingdom Protista",
+      "unit": 3,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 26,
+      "topic": "Major classes of Chordata",
+      "unit": 3,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 27,
+      "topic": "Plant tissue systems",
+      "unit": 4,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 28,
+      "topic": "Alternation of generations in plant life cycles",
+      "unit": 4,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 29,
+      "topic": "Stomatal opening mechanism",
+      "unit": 4,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 30,
+      "topic": "Nerve-impulse transmission and action potential",
+      "unit": 5,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 31,
+      "topic": "Structure and functions of the human brain",
+      "unit": 5,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 32,
+      "topic": "Reproductive hormones and the menstrual cycle",
+      "unit": 5,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 33,
+      "topic": "Natural selection and Neo-Darwinism",
+      "unit": 3,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 34,
+      "topic": "Hardy–Weinberg principle",
+      "unit": 6,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 35,
+      "topic": "PCR and DNA sequencing",
+      "unit": 7,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 36,
+      "topic": "GMO applications and biosafety",
+      "unit": 7,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 37,
+      "topic": "Terrestrial biomes",
+      "unit": 8,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 38,
+      "topic": "Microbial growth curve",
+      "unit": 9,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 39,
+      "topic": "Water treatment",
+      "unit": 9,
+      "benchmark_band": "B"
+    },
+    {
+      "id": 40,
+      "topic": "Ornamental fish culture",
+      "unit": 10,
+      "benchmark_band": "B"
+    }
+  ],
+  "recent_evidence_families": [
+    {
+      "family": "Human nervous system, brain and autonomic control",
+      "unit": 5,
+      "mcq_evidence": "2025 Q23, Q46; 2026 Q44",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Human digestion, absorption and control of digestive secretions",
+      "unit": 5,
+      "mcq_evidence": "2025 Q18, Q19; 2026 Q19",
+      "essay_history": "Essays: 2019, 2021, 2024"
+    },
+    {
+      "family": "Origin of life, biochemical evolution and natural selection",
+      "unit": 3,
+      "mcq_evidence": "2025 Q2; 2026 Q8",
+      "essay_history": "Essays: 2019, 2024"
+    },
+    {
+      "family": "Protist diversity and major representatives",
+      "unit": 3,
+      "mcq_evidence": "2025 Q42; 2026 Q10",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Human respiration, gas exchange and respiratory control",
+      "unit": 5,
+      "mcq_evidence": "2025 Q21; 2026 Q22",
+      "essay_history": "Last essay: 2019"
+    },
+    {
+      "family": "DNA structure, replication and chromosome packaging",
+      "unit": 7,
+      "mcq_evidence": "2025 Q4, Q32, Q33",
+      "essay_history": "Essay evidence: 2021–23"
+    },
+    {
+      "family": "Nephron, urine formation and osmoregulation",
+      "unit": 5,
+      "mcq_evidence": "2025 Q22, Q25; 2026 Q24",
+      "essay_history": "Last essay: 2022"
+    },
+    {
+      "family": "Enzyme properties, activity factors and inhibition",
+      "unit": 2,
+      "mcq_evidence": "2025 Q7; 2026 Q5",
+      "essay_history": "Last essay: 2019"
+    },
+    {
+      "family": "Biomes, distribution and ecological adaptations",
+      "unit": 8,
+      "mcq_evidence": "2025 Q35; 2026 Q36",
+      "essay_history": "Last essay: 2022"
+    },
+    {
+      "family": "Agricultural and industrial applications of microorganisms",
+      "unit": 9,
+      "mcq_evidence": "2025 Q38; 2026 Q39",
+      "essay_history": "Essays: 2020, 2023"
+    },
+    {
+      "family": "Alternation of generations and adaptations to terrestrial life",
+      "unit": 4,
+      "mcq_evidence": "2025 Q16; 2026 Q14, Q42",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Human axial skeleton, vertebral column and joints",
+      "unit": 5,
+      "mcq_evidence": "2025 Q28; 2026 Q30",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Major animal phyla and evolutionary trends",
+      "unit": 3,
+      "mcq_evidence": "2025 Q11",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Food preservation and control of post-harvest losses",
+      "unit": 10,
+      "mcq_evidence": "2025 Q48",
+      "essay_history": "No recorded essay 2019–25"
+    },
+    {
+      "family": "Plant and animal breeding: polyploidy, hybrid vigour and inbreeding",
+      "unit": 6,
+      "mcq_evidence": "2025 Q31",
+      "essay_history": "Essays: 2019, 2022"
+    }
+  ],
+  "notes": [
+    "The benchmark’s 40-topic A/B ordering is retained only as provenance; this report does not treat rank as a forecast.",
+    "Percentages refer to exact competency overlap among verified essay/sub-question records, not whole essays.",
+    "No future-paper probability is inferred."
+  ]
+}

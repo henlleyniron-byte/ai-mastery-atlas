@@ -31,9 +31,11 @@ test("public source contains no private local paths, account identifiers or cred
 
 test("the learner-state implementation remains browser-local and does not send progress over the network", async () => {
   const page = await readFile("app/page.tsx", "utf8");
-  assert.match(page, /localStorage\.setItem\("atlas-v4-state"/);
-  assert.doesNotMatch(page, /(?:fetch|XMLHttpRequest|sendBeacon)\s*\(/);
-  assert.doesNotMatch(page, /(?:document\.cookie|sessionStorage|indexedDB)/);
+  const saver = await readFile("lib/browser-save.ts", "utf8");
+  assert.match(page, /createSnapshotWriter\(localStorage, "atlas-v4-state"/);
+  assert.match(saver, /storage\.setItem\(key, pending\)/);
+  assert.doesNotMatch(page + saver, /(?:fetch|XMLHttpRequest|sendBeacon)\s*\(/);
+  assert.doesNotMatch(page + saver, /(?:document\.cookie|sessionStorage|indexedDB)/);
 });
 
 test("managed hosting configuration has no runtime bindings or credential fields", async () => {

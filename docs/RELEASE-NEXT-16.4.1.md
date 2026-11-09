@@ -1,0 +1,7 @@
+# Next 16.4.1 compatibility maintenance
+
+Continue published Atlas V20. Patch exact Next16.4.0→16.4.1 while preserving React family19.2.8, Vinext/Vite/Cloudflare integration, lint rules, package scripts, worksheets, retained copies, private/shared controls, schemas and origin/access. Independently install from the reviewed lock; do not reuse another Site's runtime.
+
+The [maintainer release](https://github.com/vercel/next.js/releases/tag/v16.4.1) covers the two retained critical Next advisory ranges. The previous Next-specific Sharp installation was already0.35.5, satisfying the image advisory's documented workaround; its separate root Sharp0.34.5 consumer remains a distinct tracing question. The actual Worker routes images through Vinext/Cloudflare. Vinext cache serialization is independent of Next's vendored transport, so upgrading Next does not establish that protocol's safety. Package matches and runtime exposure remain distinct.
+
+Before any publication require exact permitted manifest/lock closure, verified package integrity, fresh install, full type/lint/build/tests, compiled path attribution and actual synthetic compatibility/recovery/Share-safe browser checks. Preserve failures and skips. No new paper research, answer or classification promotion, automatic mastery, resource transfer or student-profile inspection. The Biology2019NEW revision caveat and Q42 hold remain. Actual native receipts must establish later release status.
